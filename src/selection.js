@@ -5,6 +5,7 @@ import { refreshPanel } from './panels.js';
 
 export function unhighlight() {
   objects.forEach(m => {
+    if (m.isGroup) return;
     m.material.emissive = new THREE.Color(0);
     m.material.emissiveIntensity = 0;
   });
@@ -13,6 +14,7 @@ export function unhighlight() {
 export function doHighlight() {
   unhighlight();
   selected.forEach(m => {
+    if (m.isGroup) return;
     m.material.emissive = new THREE.Color(0x4466ff);
     m.material.emissiveIntensity = 0.15;
   });
