@@ -18,7 +18,7 @@ export function gizmoStartDrag(p, mp) {
   getActiveGizmo().startDrag(p, mp);
 }
 
-export function gizmoDragUpdate(mp) {
+export function gizmoDragUpdate(mp, snap) {
   if (selected.size > 1 && state.targetObject && state.multiInitStates) {
     const g = getActiveGizmo();
     const isRot = g.dragging && (g.dragging.action === 'rotate' || g.dragging.action === 'rotateY');
@@ -37,7 +37,7 @@ export function gizmoDragUpdate(mp) {
         const ds = sp.sub(center).normalize();
         const dc = cp.sub(center).normalize();
         if (ds.length() > 0.01 && dc.length() > 0.01) {
-          const ang = Math.atan2(wAxis.dot(ds.clone().cross(dc)), ds.dot(dc));
+          let ang = Math.atan2(wAxis.dot(ds.clone().cross(dc)), ds.dot(dc)); if(snap)ang=Math.round(ang/(Math.PI/4))*Math.PI/4;
           const dRot = new THREE.Quaternion().setFromAxisAngle(wAxis, ang);
           let idx = 0;
           for (const m of selected) {
@@ -87,7 +87,9 @@ export function gizmoDragUpdate(mp) {
       g.position.copy(c);
     }
   } else {
-    getActiveGizmo().dragUpdate(mp);
+    const sg=getActiveGizmo();
+    sg.userData.snapRotation=snap;
+    sg.dragUpdate(mp);
     const g = getActiveGizmo();
     if (g.visible && state.targetObject) g.quaternion.copy(state.targetObject.quaternion);
   }

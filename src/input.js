@@ -89,7 +89,7 @@ export function setupInput() {
     const p = getPtr(e);
 
     // Gizmo dragging
-    if (state.gizmoDragging) { gizmoDragUpdate(p); refreshPanel(); return; }
+    if (state.gizmoDragging) { gizmoDragUpdate(p, e.ctrlKey||e.metaKey); refreshPanel(); return; }
 
     // Rect selection overlay
     if (state.rectDragging && state.rectStart) {
