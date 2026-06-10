@@ -188,8 +188,10 @@ export function setupInput() {
     if (mod && e.key === 'z' && !e.shiftKey) { e.preventDefault(); history.undo(); return; }
     if (mod && e.key === 'y') { e.preventDefault(); history.redo(); return; }
 
-    // Delete
+    // Delete (skip when editing text fields)
     if ((e.key === 'Delete' || e.key === 'Backspace') && selected.size > 0) {
+      const el = document.activeElement;
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return;
       if (state.dropMode) cancelDropMode();
       e.preventDefault();
       history.execute(actDelete([...selected]));
