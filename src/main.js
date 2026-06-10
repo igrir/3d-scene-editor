@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { state, sceneRefs, objects, dropTargets, selected } from './state.js';
 import { DEFAULT_COLOR } from './constants.js';
 import { initScene } from './scene.js';
-import { createObj } from './objects.js';
+import { createObj, generateAllIcons } from './objects.js';
 import { createUI, refreshPanel } from './panels.js';
 import { createGizmoInstances, getActiveGizmo, detachGizmo } from './gizmo/index.js';
 import { refreshSelection } from './selection.js';
@@ -34,7 +34,13 @@ setupInput();
 // 5. Import/Export buttons
 setupImportExport();
 
-// 6. Save/Load button
+// 6. Generate primitive icons
+const icons = generateAllIcons();
+document.querySelectorAll('.ob-icon').forEach(img => {
+  if (icons[img.dataset.t]) img.src = icons[img.dataset.t];
+});
+
+// 7. Save/Load button
 document.getElementById('btn-saveload').addEventListener('click', () => showSaveLoadUI());
 
 // ═══════════════════════════════════

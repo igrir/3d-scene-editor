@@ -144,18 +144,24 @@ export function createUI() {
   const objTab = createEl('div', { className: 'tab-content', 'data-tab': 'objects' });
   const og = createEl('div', { className: 'og' });
   const objTypes = [
-    { t: 'box', em: '\u{1F4E6}', label: 'Box' },
-    { t: 'sphere', em: '\u26AA', label: 'Sphere' },
-    { t: 'cylinder', em: '\u{1F96B}', label: 'Cyl' },
-    { t: 'cone', em: '\u{1F53A}', label: 'Cone' },
-    { t: 'torus', em: '\u{1F369}', label: 'Torus' },
-    { t: 'plane', em: '\u25AD', label: 'Plane' },
-    { t: 'image', em: '\u{1F5BC}\uFE0F', label: 'Image' },
-    { t: 'bookshelf', em: '\u{1F4DA}', label: 'Bookshelf' },
+    { t: 'box', label: 'Box' },
+    { t: 'sphere', label: 'Sphere' },
+    { t: 'cylinder', label: 'Cyl' },
+    { t: 'cone', label: 'Cone' },
+    { t: 'torus', label: 'Donut' },
+    { t: 'halfdonut', label: 'Half D' },
+    { t: 'quarterdonut', label: 'Q D' },
+    { t: 'halfball', label: 'Half B' },
+    { t: 'quarterball', label: 'Q B' },
+    { t: 'bowl', label: 'Bowl' },
+    { t: 'isotriangle', label: 'Iso △' },
+    { t: 'righttriangle', label: 'Siku △' },
+    { t: 'plane', label: 'Plane' },
+    { t: 'image', label: 'Image' },
   ];
   objTypes.forEach(o => {
     const btn = createEl('button', { className: 'ob', 'data-t': o.t });
-    btn.innerHTML = `<span class="em">${o.em}</span><span>${o.label}</span>`;
+    btn.innerHTML = `<span class="em"><img class="ob-icon" data-t="${o.t}" alt="" style="width:22px;height:22px;border-radius:3px;vertical-align:middle;"></span><span>${o.label}</span>`;
     og.appendChild(btn);
   });
   objTab.appendChild(og);
