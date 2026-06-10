@@ -66,16 +66,47 @@ export function updateGhost(e) {
   }
 }
 
-export function placeGhost() {
-  if (!state.dropMode || !state.dropMode.ghost.visible) return;
-  const pos = state.dropMode.ghost.position.clone();
-  const quat = state.dropMode.ghost.quaternion.clone();
-  const mesh = createObj(state.dropMode.type);
-  mesh.position.copy(pos);
-  mesh.quaternion.copy(quat);
-  history.execute(actCreate(mesh));
-  selected.clear();
-  selected.add(mesh);
-  refreshSelection();
-  cancelDropMode();
+export function placeGhost(p) {
+  if (!state.dropMode) return;
+  try {
+    if (!state.dropMode.ghost.visible && p) {
+      // On mobile (touch), pointerdown fires before pointermove, so ghost may not be positioned yet.
+      // Do a quick raycast here to position it.
+      const rc = new THREE.Raycaster();
+      const r = sceneRefs.renderer.domElement.getBoundingClientRect();
+      const mp = new THREE.Vector2(((p.clientX - r.left) / r.width) * 2 - 1, -((p.clientY - r.top) / r.height) * 2 + 1);
+      rc.setFromCamera(mp, sceneRefs.camera);
+      const hits = rc.intersectObjects(dropTargets, true);
+      if (hits.length) {
+        const hit = hits[0];
+        const n = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
+        const o = halfHeight(state.dropMode.type);
+        state.dropMode.ghost.position.copy(hit.point.clone().add(n.clone().multiplyScalar(o)));
+        state.dropMode.ghost.visible = true;
+        if (hit.object !== sceneRefs.shadowPlane && Math.abs(n.y) < 0.99) {
+          state.dropMode.ghost.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), n));
+        } else {
+          state.dropMode.ghost.quaternion.identity();
+        }
+      } else {
+        // Fallback: place on ground at ray-plane intersection
+        const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+        const pt = new THREE.Vector3();
+        rc.ray.intersectPlane(plane, pt);
+        if (pt) { state.dropMode.ghost.position.copy(pt); state.dropMode.ghost.visible = true; state.dropMode.ghost.quaternion.identity(); }
+      }
+    }
+    if (!state.dropMode.ghost.visible) return;
+    const pos = state.dropMode.ghost.position.clone();
+    const quat = state.dropMode.ghost.quaternion.clone();
+    const mesh = createObj(state.dropMode.type);
+    mesh.position.copy(pos);
+    mesh.quaternion.copy(quat);
+    history.execute(actCreate(mesh));
+    selected.clear();
+    selected.add(mesh);
+    refreshSelection();
+  } finally {
+    cancelDropMode();
+  }
 }

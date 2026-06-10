@@ -37,7 +37,7 @@ export function setupInput() {
 
     // Drop mode
     if (state.dropMode) {
-      if (state.dropMode.ghost.visible) placeGhost();
+      placeGhost(e);
       return;
     }
 
