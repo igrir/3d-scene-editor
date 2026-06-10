@@ -8,6 +8,12 @@ import { cancelDropMode } from './drop-mode.js';
 
 const SAVES_KEY = 'scene_editor_saves';
 
+// Track which save slot is currently loaded
+let currentSaveId = null;
+
+export function getCurrentSaveId() { return currentSaveId; }
+export function setCurrentSaveId(id) { currentSaveId = id; }
+
 export function getSaves() {
   try {
     return JSON.parse(localStorage.getItem(SAVES_KEY)) || [];
@@ -69,6 +75,21 @@ export function saveCurrentScene(name) {
     data,
   });
   saveSaves(saves);
+  return saves;
+}
+
+export function overwriteSave(id, name) {
+  const data = exportSceneData();
+  const thumbnail = captureThumbnail();
+  const saves = getSaves();
+  const idx = saves.findIndex(s => s.id === id);
+  if (idx >= 0) {
+    saves[idx].data = data;
+    saves[idx].thumbnail = thumbnail;
+    saves[idx].timestamp = Date.now();
+    if (name) saves[idx].name = name;
+    saveSaves(saves);
+  }
   return saves;
 }
 
@@ -159,22 +180,46 @@ export function showSaveLoadUI() {
   hdr.appendChild(closeBtn);
   box.appendChild(hdr);
 
-  // Save current button
+  // Save buttons row
+  const saveRow = document.createElement('div');
+  saveRow.style.cssText = 'display:flex;gap:8px;margin-bottom:16px;';
+
+  // Save (overwrite current)
   const saveBtn = document.createElement('button');
-  saveBtn.textContent = '\u{1F4FD}\uFE0F Save Current Scene';
+  saveBtn.textContent = '\u{1F4BE} Save';
   saveBtn.style.cssText = `
-    width:100%;padding:12px;border:none;border-radius:12px;
-    background:rgba(0,0,0,.08);cursor:pointer;font-size:14px;font-weight:600;
-    margin-bottom:16px;color:#222;
+    flex:1;padding:12px;border:none;border-radius:12px;
+    cursor:pointer;font-size:14px;font-weight:600;color:#fff;
+    background:#0f3460;
   `;
+  if (!currentSaveId) { saveBtn.style.opacity = '.4'; saveBtn.title = 'Load a save first, or use Save As'; }
   saveBtn.onclick = () => {
+    if (!currentSaveId) { alert('Belum ada save yang di-load. Pake Save As buat bikin save baru.'); return; }
+    const saves = getSaves();
+    const cur = saves.find(s => s.id === currentSaveId);
+    overwriteSave(currentSaveId, cur ? cur.name : undefined);
+    ov.remove();
+    showSaveLoadUI();
+  };
+  saveRow.appendChild(saveBtn);
+
+  // Save As (always new)
+  const saveAsBtn = document.createElement('button');
+  saveAsBtn.textContent = '\u{1F4FD}\uFE0F Save As';
+  saveAsBtn.style.cssText = `
+    flex:1;padding:12px;border:none;border-radius:12px;
+    cursor:pointer;font-size:14px;font-weight:600;color:#222;
+    background:rgba(0,0,0,.08);
+  `;
+  saveAsBtn.onclick = () => {
     const name = prompt('Save as:', 'Scene ' + new Date().toLocaleString('id-ID'));
     if (!name) return;
     saveCurrentScene(name);
     ov.remove();
-    showSaveLoadUI(); // refresh
+    showSaveLoadUI();
   };
-  box.appendChild(saveBtn);
+  saveRow.appendChild(saveAsBtn);
+  box.appendChild(saveRow);
 
   // Saved scenes list
   const saves = getSaves();
@@ -227,7 +272,12 @@ export function showSaveLoadUI() {
         background:rgba(15,52,96,.15);cursor:pointer;font-size:12px;font-weight:600;
         white-space:nowrap;color:#0f3460;
       `;
-      loadBtn.onclick = e => { e.stopPropagation(); loadFromData(s.data); ov.remove(); };
+      loadBtn.onclick = e => {
+        e.stopPropagation();
+        currentSaveId = s.id;
+        loadFromData(s.data);
+        ov.remove();
+      };
       card.appendChild(loadBtn);
 
       // Delete button
