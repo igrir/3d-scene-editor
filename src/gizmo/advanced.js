@@ -122,7 +122,8 @@ export class AdvancedGizmo extends THREE.Group {
         const ds = sv.sub(state.targetObject.position).normalize();
         const dc = cv.sub(state.targetObject.position).normalize();
         if (ds.length() > 0.01 && dc.length() > 0.01) {
-          const ang = Math.atan2(wAxis.dot(ds.clone().cross(dc)), ds.dot(dc));
+          let ang = Math.atan2(wAxis.dot(ds.clone().cross(dc)), ds.dot(dc));
+          if(this.userData.snapRotation)ang=Math.round(ang/(Math.PI/4))*Math.PI/4;
           state.targetObject.quaternion.copy(startRot.clone().multiply(new THREE.Quaternion().setFromAxisAngle(localAxis, ang)));
         }
       }
