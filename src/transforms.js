@@ -94,7 +94,8 @@ export function gizmoDragUpdate(mp, snap) {
     sg.dragUpdate(mp);
     if(snap&&sg.dragging){
       const sp=0.5;const act2=sg.dragging.action;const to=state.targetObject;
-      if(act2==='translate'||act2==='xz'){to.position.x=Math.round(to.position.x/sp)*sp;to.position.z=Math.round(to.position.z/sp)*sp;}
+      if(act2==='translate'){to.position.x=Math.round(to.position.x/sp)*sp;to.position.y=Math.round(to.position.y/sp)*sp;to.position.z=Math.round(to.position.z/sp)*sp;}
+      else if(act2==='xz'){to.position.x=Math.round(to.position.x/sp)*sp;to.position.z=Math.round(to.position.z/sp)*sp;}
       else if(act2==='y'){to.position.y=Math.round(to.position.y/sp)*sp;}
       else if(act2==='scale'){for(const a of['x','y','z'])to.scale[a]=Math.max(0.1,Math.round(to.scale[a]/sp)*sp);}
     }
