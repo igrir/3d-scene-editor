@@ -17,7 +17,7 @@ export function setupImportExport() {
       if (m.userData.type === 'image' && m.userData.imageSrc) {
         d.color = '#ffffff';
         d.img = m.userData.imageSrc;
-      } else {
+      } else if (!m.isGroup) {
         d.color = '#' + m.material.color.getHexString();
       }
       return d;
@@ -49,7 +49,7 @@ export function setupImportExport() {
           if (entry.pos) m.position.fromArray(entry.pos);
           if (entry.rot) m.quaternion.set(entry.rot[0], entry.rot[1], entry.rot[2], entry.rot[3]);
           if (entry.scl) m.scale.fromArray(entry.scl);
-          if (entry.color && entry.type !== 'image') {
+          if (entry.color && entry.type !== 'image' && !m.isGroup) {
             m.material.color.set(entry.color);
           }
           history.execute(actCreate(m));

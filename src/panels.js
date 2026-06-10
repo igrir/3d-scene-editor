@@ -150,6 +150,7 @@ export function createUI() {
     { t: 'torus', em: '\u{1F369}', label: 'Torus' },
     { t: 'plane', em: '\u25AD', label: 'Plane' },
     { t: 'image', em: '\u{1F5BC}\uFE0F', label: 'Image' },
+    { t: 'bookshelf', em: '\u{1F4DA}', label: 'Bookshelf' },
   ];
   objTypes.forEach(o => {
     const btn = createEl('button', { className: 'ob', 'data-t': o.t });

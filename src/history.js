@@ -73,7 +73,7 @@ export function actDelete(ms) {
     pos: m.position.clone(),
     quat: m.quaternion.clone(),
     scl: m.scale.clone(),
-    color: m.material.color.getHex(),
+    color: m.isGroup ? null : m.material.color.getHex(),
     type: m.userData.type,
   }));
   return {
@@ -91,7 +91,7 @@ export function actDelete(ms) {
         x.mesh.position.copy(x.pos);
         x.mesh.quaternion.copy(x.quat);
         x.mesh.scale.copy(x.scl);
-        x.mesh.material.color.setHex(x.color);
+        if (x.color !== null) x.mesh.material.color.setHex(x.color);
         sceneRefs.scene.add(x.mesh);
         objects.push(x.mesh);
         dropTargets.push(x.mesh);

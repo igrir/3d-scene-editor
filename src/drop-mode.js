@@ -49,7 +49,7 @@ export function updateGhost(e) {
   );
   const rc = new THREE.Raycaster();
   rc.setFromCamera(p, sceneRefs.camera);
-  const hits = rc.intersectObjects(dropTargets, false);
+  const hits = rc.intersectObjects(dropTargets, true);
   if (hits.length > 0) {
     const hit = hits[0];
     const n = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);

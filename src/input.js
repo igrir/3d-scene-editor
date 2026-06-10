@@ -21,7 +21,14 @@ export function setupInput() {
   function hitObjs(e) {
     const p = getPtr(e);
     sceneRefs.raycaster.setFromCamera(p, sceneRefs.camera);
-    return sceneRefs.raycaster.intersectObjects(objects);
+    const hits = sceneRefs.raycaster.intersectObjects(objects, true);
+    // Map child hits back to root group (for bookshelf etc.)
+    return hits.map(h => {
+      let obj = h.object;
+      while (obj && !objects.includes(obj)) obj = obj.parent;
+      if (obj && obj !== h.object) { h.object = obj; }
+      return h;
+    }).filter(h => objects.includes(h.object));
   }
 
   // ── pointerdown ──

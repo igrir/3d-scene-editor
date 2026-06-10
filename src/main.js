@@ -55,17 +55,18 @@ document.querySelectorAll('.ob[data-t]').forEach(b => {
 
 // Color picker
 document.getElementById('cp').addEventListener('input', () => {
-  const oc = [...selected].map(m => m.material.color.getHex());
+  const selMeshes = [...selected].filter(m => !m.isGroup);
+  const oc = selMeshes.map(m => m.material.color.getHex());
   const nc = document.getElementById('cp').value;
   state.nextColor = nc;
   document.getElementById('ch').textContent = nc;
   if (state.dropMode && state.dropMode.ghost) {
     state.dropMode.ghost.material.color.set(nc);
   }
-  if (selected.size) {
+  if (selMeshes.length) {
     const c = new THREE.Color(nc);
-    selected.forEach(m => m.material.color.copy(c));
-    history.execute(actColor([...selected], oc, nc));
+    selMeshes.forEach(m => m.material.color.copy(c));
+    history.execute(actColor(selMeshes, oc, nc));
     refreshPanel();
   }
 });
@@ -74,17 +75,18 @@ document.getElementById('cp').addEventListener('input', () => {
 document.querySelectorAll('.cc span').forEach(el => {
   el.addEventListener('click', () => {
     const c = el.dataset.c;
-    const oc = [...selected].map(m => m.material.color.getHex());
+    const selMeshes = [...selected].filter(m => !m.isGroup);
+    const oc = selMeshes.map(m => m.material.color.getHex());
     document.getElementById('cp').value = c;
     document.getElementById('ch').textContent = c;
     state.nextColor = c;
     if (state.dropMode && state.dropMode.ghost) {
       state.dropMode.ghost.material.color.set(c);
     }
-    if (selected.size) {
+    if (selMeshes.length) {
       const col = new THREE.Color(c);
-      selected.forEach(m => m.material.color.copy(col));
-      history.execute(actColor([...selected], oc, c));
+      selMeshes.forEach(m => m.material.color.copy(col));
+      history.execute(actColor(selMeshes, oc, c));
       refreshPanel();
     }
   });
@@ -105,10 +107,14 @@ document.getElementById('btn-del-tl').addEventListener('click', delSel);
 // Reset scene
 document.getElementById('bdrst').addEventListener('click', () => {
   if (state.dropMode) cancelDropMode();
+  function disposeObj(o) {
+    if (o.isGroup) { o.children.forEach(disposeObj); return; }
+    if (o.geometry) o.geometry.dispose();
+    if (o.material) o.material.dispose();
+  }
   for (const m of [...objects]) {
     sceneRefs.scene.remove(m);
-    m.geometry.dispose();
-    m.material.dispose();
+    disposeObj(m);
   }
   objects.length = 0;
   dropTargets.length = 1; // only shadowPlane remains
