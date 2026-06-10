@@ -8,6 +8,7 @@ import { createGizmoInstances, getActiveGizmo, detachGizmo } from './gizmo/index
 import { refreshSelection } from './selection.js';
 import { setupInput } from './input.js';
 import { setupImportExport } from './import-export.js';
+import { showSaveLoadUI } from './saveload.js';
 import { history, actCreate, actColor } from './history.js';
 import { cancelDropMode, startDropMode, placeGhost } from './drop-mode.js';
 import { delSel, dupSel } from './objects.js';
@@ -32,6 +33,9 @@ setupInput();
 
 // 5. Import/Export buttons
 setupImportExport();
+
+// 6. Save/Load button
+document.getElementById('btn-saveload').addEventListener('click', () => showSaveLoadUI());
 
 // ═══════════════════════════════════
 // WIRE COMPLEX HANDLERS

@@ -91,6 +91,7 @@ export function createUI() {
 
   // ── io-float ──
   const io = createEl('div', { id: 'io-float' });
+  io.appendChild(createEl('button', { id: 'btn-saveload', title: 'Save / Load', text: '\u{1F4BE}' }));
   io.appendChild(createEl('button', { id: 'btn-export', title: 'Export', text: '\u{1F4E4}' }));
   io.appendChild(createEl('button', { id: 'btn-import', title: 'Import', text: '\u{1F4E5}' }));
   cv.appendChild(io);
