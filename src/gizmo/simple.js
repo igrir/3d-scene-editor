@@ -142,7 +142,7 @@ export class SimpleGizmo extends THREE.Group {
         const hitPoint = new THREE.Vector3();
         rc.setFromCamera(mp, sceneRefs.camera);
         const targets = dropTargets.filter(t => !selected.has(t));
-        const hits = rc.intersectObjects(targets, false);
+        const hits = rc.intersectObjects(targets, true);
         if (hits.length > 0) {
           const hit = hits[0];
           const normal = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
@@ -200,10 +200,7 @@ export class SimpleGizmo extends THREE.Group {
       const dy = d.dot(localUp);
       const factor = 1 + dy * 1.5;
       const s = Math.max(0.1, startScale.x * factor);
-      const os = startScale.x;
       state.targetObject.scale.set(s, s, s);
-      const up = new THREE.Vector3(0, 1, 0).applyQuaternion(state.targetObject.quaternion);
-      state.targetObject.position.copy(startPos.clone().add(up.clone().multiplyScalar((s - os) * 0.5)));
     }
     this.position.copy(state.targetObject.position);
   }

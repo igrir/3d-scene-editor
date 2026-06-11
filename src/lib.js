@@ -26,6 +26,7 @@ import { loadFromData, exportSceneData, showSaveLoadUI } from './saveload.js';
 import { history, actCreate } from './history.js';
 import { cancelDropMode, startDropMode, placeGhost } from './drop-mode.js';
 import { delSel, dupSel } from './objects.js';
+import { groupSelected, ungroupSelected, initPrefabUI } from './prefabs.js';
 // Inject CSS into the page (inlined in JS bundle, no extra HTTP request)
 // Body overflow:hidden is stripped so embedding pages can scroll.
 // Fullscreen pages (/editor/) set overflow:hidden via their own CSS.
@@ -132,7 +133,10 @@ export class PrimitiveEditor {
     // 9. Wire up action buttons (duplicate, delete)
     this._wireActionButtons();
 
-    // 10. Start animation loop
+    // 10. Init prefab UI
+    initPrefabUI();
+
+    // 11. Start animation loop
     this._startLoop();
 
     this._ready = true;
@@ -187,6 +191,10 @@ export class PrimitiveEditor {
       { id: 'bddel', action: delSel },
       { id: 'btn-del-tl', action: delSel },
     ].forEach(({ id, action }) => this._wireButton(id, action));
+    // Group/ungroup buttons
+    this._wireButton('btn-group', groupSelected);
+    this._wireButton('btn-ungroup', ungroupSelected);
+
     // Flip buttons
     this._wireFlipButtons();
   }

@@ -49,6 +49,11 @@ export class AdvancedGizmo extends THREE.Group {
     }
     // Center sphere — bigger
     this.add(new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), M(0xffffff, 0.4)));
+    // Uniform scale cube — yellow, at center
+    const uScale = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.22, 0.22), M(0xffcc00, 0.9));
+    uScale.userData = { action: 'uniscale', gizmo: this };
+    this.add(uScale);
+    this.parts.push(uScale);
   }
 
   buildHelpers() {
@@ -236,7 +241,16 @@ export class AdvancedGizmo extends THREE.Group {
       const sclAxis2 = new THREE.Vector3(ai === 0 ? 1 : 0, ai === 1 ? 1 : 0, ai === 2 ? 1 : 0).applyQuaternion(this.quaternion);
       const ns = Math.max(0.1, os * (1 + d.dot(sclAxis2) * 1.5));
       state.targetObject.scale.setComponent(ai, ns);
-      state.targetObject.position.copy(startPos.clone().add(sclAxis2.clone().multiplyScalar((ns - os) * 0.5)));
+    } else if (action === 'uniscale') {
+      const localUp = new THREE.Vector3(0, 1, 0).applyQuaternion(this.quaternion);
+      const dy = d.dot(localUp);
+      const factor = 1 + dy * 1.5;
+      // Uniform scale relative to each axis' current value
+      state.targetObject.scale.set(
+        Math.max(0.1, startScale.x * factor),
+        Math.max(0.1, startScale.y * factor),
+        Math.max(0.1, startScale.z * factor)
+      );
     }
     this.position.copy(state.targetObject.position);
   }

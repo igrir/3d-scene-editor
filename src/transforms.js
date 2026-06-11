@@ -97,7 +97,7 @@ export function gizmoDragUpdate(mp, snap) {
       if(act2==='translate'){to.position.x=Math.round(to.position.x/sp)*sp;to.position.y=Math.round(to.position.y/sp)*sp;to.position.z=Math.round(to.position.z/sp)*sp;}
       else if(act2==='xz'){to.position.x=Math.round(to.position.x/sp)*sp;to.position.z=Math.round(to.position.z/sp)*sp;}
       else if(act2==='y'){to.position.y=Math.round(to.position.y/sp)*sp;}
-      else if(act2==='scale'){for(const a of['x','y','z'])to.scale[a]=Math.max(0.1,Math.round(to.scale[a]/sp)*sp);}
+      else if(act2==='scale'||act2==='uniscale'){for(const a of['x','y','z'])to.scale[a]=Math.max(0.1,Math.round(to.scale[a]/sp)*sp);}
     }
     const g = getActiveGizmo();
     if (g.visible && state.targetObject) g.quaternion.copy(state.targetObject.quaternion);

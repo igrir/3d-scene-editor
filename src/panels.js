@@ -346,6 +346,10 @@ export function createUI() {
   tl.appendChild(createEl('div', { style: 'height:1px;background:rgba(200,200,210,.3);margin:6px 4px;border-radius:1px' }));
   tl.appendChild(createEl('button', { className: 'tl-btn', id: 'btn-fliph', title: 'Flip Horizontal (scale.x *= -1)', text: '\u2194' }));
   tl.appendChild(createEl('button', { className: 'tl-btn', id: 'btn-flipv', title: 'Flip Vertical (scale.y *= -1)', text: '\u2195' }));
+  // Divider
+  tl.appendChild(createEl('div', { style: 'height:1px;background:rgba(200,200,210,.3);margin:6px 4px;border-radius:1px' }));
+  tl.appendChild(createEl('button', { className: 'tl-btn', id: 'btn-group', title: 'Group selected', text: '\u{1F4E6}' }));
+  tl.appendChild(createEl('button', { className: 'tl-btn', id: 'btn-ungroup', title: 'Ungroup selected', text: '\u{1F513}' }));
   tl.appendChild(createEl('button', { className: 'tl-btn', id: 'btn-paint', title: 'Paint bucket — tap object to color', text: '\u{1FAA3}' }));
   tl.appendChild(createEl('button', { className: 'tl-btn', id: 'btn-eyedrop', title: 'Eyedropper — tap object to pick color', text: '\u{1F489}' }));
   cv.appendChild(tl);
@@ -376,6 +380,7 @@ export function createUI() {
   const tabs = createEl('div', { id: 'panel-tabs' });
   const tabNames = [
     { tab: 'objects', label: '\u{1F4E6} Objects' },
+    { tab: 'prefabs', label: '\u{1F3ED} Prefabs' },
     { tab: 'tools', label: '\u{1F527} Tools' },
     { tab: 'color', label: '\u{1F3A8} Color' },
     { tab: 'info', label: '\u{1F4CB} Info' },
@@ -419,6 +424,15 @@ export function createUI() {
   imgInput.style.display = 'none';
   objTab.appendChild(imgInput);
   content.appendChild(objTab);
+
+  // ── Prefabs tab ──
+  const prefabTab = createEl('div', { className: 'tab-content', 'data-tab': 'prefabs' });
+  prefabTab.style.display = 'none';
+  prefabTab.appendChild(createHdr('Prefabs'));
+  const pfGrid = createEl('div', { className: 'pf-grid' });
+  pfGrid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:4px';
+  prefabTab.appendChild(pfGrid);
+  content.appendChild(prefabTab);
 
   // ── Tools tab ──
   const toolsTab = createEl('div', { className: 'tab-content', 'data-tab': 'tools' });

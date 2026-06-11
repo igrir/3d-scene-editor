@@ -145,3 +145,17 @@ body.dragging-swatch{user-select:none;-webkit-user-select:none}
   #panel{max-height:36vh;min-height:190px;width:500px;left:50%!important;right:auto;transform:translateX(-50%);margin:0 auto 16px}
   .og{grid-template-columns:1fr 1fr 1fr}
 }
+
+/* Prefab buttons */
+.pf-btn{min-height:72px;padding:6px 4px;background:rgba(255,255,255,.85);border:1px solid rgba(200,200,210,.5);border-radius:10px;color:#222;cursor:pointer;font-size:11px;text-align:center;transition:.15s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;overflow:hidden}
+.pf-btn:hover{background:rgba(233,69,96,.1);border-color:#e94560;color:#e94560}
+.pf-btn.pf-add{font-size:28px;color:#888;background:rgba(255,255,255,.5);min-height:72px}
+.pf-btn.pf-add:hover{background:rgba(233,69,96,.08);color:#e94560}
+.pf-thumb{width:48px;height:48px;border-radius:6px;object-fit:cover;border:1px solid rgba(0,0,0,.06)}
+.pf-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+
+/* Prefab delete mode */
+.pf-btn.pf-deleting{animation:pf-jitter .12s infinite;border-color:rgba(200,0,0,.4)!important}
+.pf-btn.pf-deleting::after{content:'\2716';position:absolute;top:-4px;right:-4px;width:18px;height:18px;border-radius:50%;background:#e94560;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:5}
+.pf-btn.pf-deleting:hover{transform:scale(1.05);border-color:#c00!important;background:rgba(200,0,0,.08)!important}
+@keyframes pf-jitter{0%,100%{transform:rotate(0deg)}25%{transform:rotate(1.5deg)}75%{transform:rotate(-1.5deg)}}

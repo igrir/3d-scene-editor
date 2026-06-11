@@ -12,6 +12,7 @@ import { showSaveLoadUI } from './saveload.js';
 import { history, actCreate } from './history.js';
 import { cancelDropMode, startDropMode, placeGhost } from './drop-mode.js';
 import { delSel, dupSel } from './objects.js';
+import { groupSelected, ungroupSelected, initPrefabUI } from './prefabs.js';
 
 // ═══════════════════════════════════
 // INITIALIZATION
@@ -49,6 +50,9 @@ window._refreshIcons = (color) => {
 
 // 7. Save/Load button
 document.getElementById('btn-saveload').addEventListener('click', () => showSaveLoadUI());
+
+// 8. Init prefab UI
+initPrefabUI();
 
 // ═══════════════════════════════════
 // WIRE COMPLEX HANDLERS
@@ -97,6 +101,8 @@ document.getElementById('btn-del-tl').addEventListener('click', delSel);
 // Flip
 document.getElementById('btn-fliph').addEventListener('click', () => flipSel('x'));
 document.getElementById('btn-flipv').addEventListener('click', () => flipSel('y'));
+document.getElementById('btn-group').addEventListener('click', groupSelected);
+document.getElementById('btn-ungroup').addEventListener('click', ungroupSelected);
 
 function flipSel(axis) {
   if (!selected.size) return;
