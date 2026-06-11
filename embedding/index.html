@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Embedding 3D Primitive Builder</title>
+<style>
+  body { background:#0d0d1a; color:#e0e0e8; font-family:system-ui,sans-serif; max-width:780px; margin:40px auto; padding:0 24px; line-height:1.6; }
+  h1 { color:#e94560; }
+  a { color:#e94560; }
+  pre { background:rgba(0,0,0,.4); border:1px solid rgba(255,255,255,.06); border-radius:12px; padding:16px; overflow-x:auto; font-size:13px; }
+  code { background:rgba(233,69,96,.12); color:#e94560; padding:2px 6px; border-radius:4px; font-size:13px; }
+  hr { border:none; border-top:1px solid rgba(255,255,255,.06); margin:24px 0; }
+</style>
+</head>
+<body>
+<h1>🌐 Embedding 3D Primitive Builder</h1>
+<p>Include the full 3D scene editor on any website with a single <code>&lt;script&gt;</code> tag. No build tools, no framework, no server required.</p>
+
+<h2>Quick Start</h2>
+<pre>&lt;div id="editor" style="width:100%;height:500px"&gt;&lt;/div&gt;
+&lt;script src="../dist/3d-primitive-builder.umd.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  PrimitiveBuilder.create('#editor', { height: 500 }).init();
+&lt;/script&gt;</pre>
+
+<h2>Zero-JS Embed</h2>
+<pre>&lt;div data-primitive-editor='{"height":500}'&gt;&lt;/div&gt;
+&lt;script src="../dist/3d-primitive-builder.umd.js"&gt;&lt;/script&gt;</pre>
+
+<h2>API Reference</h2>
+<table>
+<tr><th>Method</th><th>Description</th></tr>
+<tr><td><code>.init()</code></td><td>Initialize the 3D scene (async)</td></tr>
+<tr><td><code>.addPrimitive(type)</code></td><td>Add an object (box, sphere, etc.)</td></tr>
+<tr><td><code>.loadScene(data)</code></td><td>Load scene from JSON</td></tr>
+<tr><td><code>.getSceneData()</code></td><td>Export scene as JSON</td></tr>
+<tr><td><code>.clearScene()</code></td><td>Remove all objects</td></tr>
+<tr><td><code>.setBackgroundColor(hex)</code></td><td>Change background</td></tr>
+<tr><td><code>.destroy()</code></td><td>Clean up</td></tr>
+</table>
+
+<h2>Example</h2>
+<pre>const editor = await PrimitiveBuilder.create('#editor', {
+  height: 520,
+}).init();
+
+editor.addPrimitive('box');
+editor.addPrimitive('sphere');
+
+const data = editor.getSceneData();
+console.log(data);
+
+// Clean up when done
+// editor.destroy();</pre>
+
+<p>See the full <a href="https://github.com/igrir/3d-primitive-builder/blob/main/embedding/README.md">README on GitHub</a> for detailed docs.</p>
+<hr>
+<p><a href="../">← Back to 3D Primitive Builder</a></p>
+</body>
+</html>
