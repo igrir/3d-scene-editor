@@ -22,7 +22,7 @@ import { createGizmoInstances, getActiveGizmo, detachGizmo, attachGizmo } from '
 import { refreshSelection } from './selection.js';
 import { setupInput } from './input.js';
 import { setupImportExport } from './import-export.js';
-import { showSaveLoadUI, loadFromData, exportSceneData } from './saveload.js';
+import { loadFromData, exportSceneData } from './saveload.js';
 import { history, actCreate } from './history.js';
 import { cancelDropMode, startDropMode, placeGhost } from './drop-mode.js';
 import { delSel, dupSel } from './objects.js';
@@ -109,8 +109,6 @@ export class PrimitiveEditor {
     // 3. UI
     if (this.options.showUI) {
       createUI();
-      // Override save/load for library mode
-      this._patchSaveLoad();
     }
 
     // 4. Input
@@ -240,19 +238,6 @@ export class PrimitiveEditor {
       sceneRefs.composer.render();
     };
     loop();
-  }
-
-  _patchSaveLoad() {
-    // In library mode, Save/Load opens a simple alert
-    const btn = document.getElementById('btn-saveload');
-    if (btn) {
-      btn.removeEventListener('click', showSaveLoadUI);
-      btn.addEventListener('click', () => {
-        const data = exportSceneData();
-        console.log('[PrimitiveBuilder] Scene data:', JSON.stringify(data));
-        alert('Scene data logged to console (F12)');
-      });
-    }
   }
 
   // ── API Methods ──
