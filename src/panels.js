@@ -403,6 +403,7 @@ export function createUI() {
     { t: 'sphere', label: 'Sphere' },
     { t: 'cylinder', label: 'Cyl' },
     { t: 'cone', label: 'Cone' },
+    { t: 'pyramid', label: 'Pyramid' },
     { t: 'torus', label: 'Donut' },
     { t: 'halfdonut', label: 'Half D' },
     { t: 'quarterdonut', label: 'Q D' },

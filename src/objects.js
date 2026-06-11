@@ -11,6 +11,7 @@ export function getGeom(t) {
     case 'sphere': return new THREE.SphereGeometry(0.6, 24, 24);
     case 'cylinder': return new THREE.CylinderGeometry(0.5, 0.5, 1, 24);
     case 'cone': return new THREE.ConeGeometry(0.6, 1, 24);
+    case 'pyramid': return new THREE.ConeGeometry(0.6, 1, 4);
     case 'halfdonut': return new THREE.TorusGeometry(0.5, 0.18, 16, 24, Math.PI);
     case 'donut': return new THREE.TorusGeometry(0.5, 0.18, 16, 24);
     case 'quarterdonut': return new THREE.TorusGeometry(0.5, 0.18, 16, 24, Math.PI / 2);
@@ -27,7 +28,7 @@ export function getGeom(t) {
 }
 
 export function halfHeight(t) {
-  return { box: 0.5, sphere: 0.6, cylinder: 0.5, cone: 0.5, torus: 0.18, plane: 0.03, image: 0.005, halfdonut: 0.18, donut: 0.18, quarterdonut: 0.18, halfball: 0.3, quarterball: 0.3, bowl: 0.5, isotriangle: 0.5, righttriangle: 0.5 }[t] ?? 0.5;
+  return { box: 0.5, sphere: 0.6, cylinder: 0.5, cone: 0.5, pyramid: 0.5, torus: 0.18, plane: 0.03, image: 0.005, halfdonut: 0.18, donut: 0.18, quarterdonut: 0.18, halfball: 0.3, quarterball: 0.3, bowl: 0.5, isotriangle: 0.5, righttriangle: 0.5 }[t] ?? 0.5;
 }
 
 export function makePlaceholderTex() {
@@ -253,7 +254,7 @@ function getIconRenderer() {
 
 export function generateAllIcons(color) {
   const icons = {};
-  const iconTypes = ['box','sphere','cylinder','cone','torus','halfdonut','quarterdonut','halfball','quarterball','bowl','isotriangle','righttriangle','plane'];
+  const iconTypes = ['box','sphere','cylinder','cone','pyramid','torus','halfdonut','quarterdonut','halfball','quarterball','bowl','isotriangle','righttriangle','plane'];
   
   const renderer = getIconRenderer();
   const sc = _iconScene;
