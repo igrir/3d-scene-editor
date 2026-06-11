@@ -281,12 +281,20 @@ export function refreshPanel() {
   const si = document.getElementById('si');
   const sc = document.getElementById('sc');
   const ed = document.getElementById('si-editor');
+  const panel = document.getElementById('panel');
   if (selected.size === 0) {
     si.style.display = '';
     ed.style.display = 'none';
     si.innerHTML = '<span class="l">Click object to select</span>';
     sc.textContent = '\u2014';
     state.editingObject = null;
+    // Expand panel when nothing selected
+    if (panel) {
+      panel.classList.remove('collapsed');
+      const icon = document.getElementById('pnl-toggle-icon');
+      if (icon) icon.textContent = '\u25BC';
+      setTimeout(() => { if (sceneRefs.resize) sceneRefs.resize(); }, 50);
+    }
     return;
   }
   sc.textContent = selected.size;
@@ -295,6 +303,13 @@ export function refreshPanel() {
     si.style.display = 'none';
     ed.style.display = '';
     populateEditor(m);
+    // Collapse panel when object selected — gives more 3D space
+    if (panel) {
+      panel.classList.add('collapsed');
+      const icon = document.getElementById('pnl-toggle-icon');
+      if (icon) icon.textContent = '\u25B2';
+      setTimeout(() => { if (sceneRefs.resize) sceneRefs.resize(); }, 50);
+    }
   }
 }
 
