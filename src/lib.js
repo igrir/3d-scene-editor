@@ -181,7 +181,7 @@ export class PrimitiveEditor {
   }
 
   _wireActionButtons() {
-    // Wire duplicate and delete buttons (normally in main.js)
+    // Wire duplicate, delete, flip buttons (normally in main.js)
     [
       { id: 'bdup', action: dupSel },
       { id: 'btn-dup-tl', action: dupSel },
@@ -193,6 +193,32 @@ export class PrimitiveEditor {
       const clone = btn.cloneNode(true);
       btn.parentNode.replaceChild(clone, btn);
       clone.addEventListener('click', action);
+    });
+    // Flip buttons
+    this._wireFlipButtons();
+  }
+
+  _wireFlipButtons() {
+    const flipSel = (axis) => {
+      if (!selected.size) return;
+      const ai = axis === 'x' ? 0 : axis === 'y' ? 1 : 2;
+      const oldScales = [...selected].map(m => m.scale.clone());
+      for (const m of selected) {
+        m.scale.setComponent(ai, -m.scale.getComponent(ai));
+      }
+      const newScales = [...selected].map(m => m.scale.clone());
+      history.execute({
+        do: () => selected.forEach((m, i) => m.scale.copy(newScales[i])),
+        undo: () => selected.forEach((m, i) => m.scale.copy(oldScales[i])),
+      });
+    };
+    ['btn-fliph', 'btn-flipv'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      const axis = id === 'btn-fliph' ? 'x' : 'y';
+      const clone = btn.cloneNode(true);
+      btn.parentNode.replaceChild(clone, btn);
+      clone.addEventListener('click', () => flipSel(axis));
     });
   }
 
