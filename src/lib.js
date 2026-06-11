@@ -27,12 +27,18 @@ import { history, actCreate } from './history.js';
 import { cancelDropMode, startDropMode, placeGhost } from './drop-mode.js';
 import { delSel, dupSel } from './objects.js';
 // Inject CSS into the page (inlined in JS bundle, no extra HTTP request)
+// Body overflow:hidden is stripped so embedding pages can scroll.
+// Fullscreen pages (/editor/) set overflow:hidden via their own CSS.
 import cssStyle from '../css/style.css?inline';
 (function injectLibCSS() {
   if (typeof document === 'undefined' || document.getElementById('__pb_css')) return;
   const s = document.createElement('style');
   s.id = '__pb_css';
-  s.textContent = cssStyle;
+  // Only strip standalone body{...overflow:hidden...} — NOT #panel-body etc.
+  const cleaned = cssStyle.replace(/^body\{[^}]*\}/gm, (m) => {
+    return m.replace(/overflow:[^;]+;?/g, '');
+  });
+  s.textContent = cleaned;
   document.head.appendChild(s);
 })();
 
