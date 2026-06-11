@@ -28,12 +28,29 @@ import { cancelDropMode, startDropMode } from './drop-mode.js';
 import { delSel, dupSel } from './objects.js';
 // Inject CSS into the page (inlined in JS bundle, no extra HTTP request)
 import cssStyle from '../css/style.css?inline';
-(function() {
+(function injectLibCSS() {
   if (typeof document === 'undefined' || document.getElementById('__pb_css')) return;
   const s = document.createElement('style');
   s.id = '__pb_css';
   s.textContent = cssStyle;
   document.head.appendChild(s);
+})();
+
+// Suppress Three.js r155+ deprecation warnings (harmless)
+(function suppressThreeWarnings() {
+  if (typeof console === 'undefined') return;
+  const _warn = console.warn;
+  const suppressed = [
+    'physicallyCorrectLights',
+    'useLegacyLights',
+  ];
+  console.warn = function(...args) {
+    const msg = args.join(' ');
+    for (const s of suppressed) {
+      if (msg.includes(s)) return;
+    }
+    _warn.apply(console, args);
+  };
 })();
 
 export class PrimitiveEditor {
@@ -101,12 +118,35 @@ export class PrimitiveEditor {
       if (icons[img.dataset.t]) img.src = icons[img.dataset.t];
     });
 
+    // 7. Start animation loop
+    this._startLoop();
+
     this._ready = true;
 
     // Expose some methods on the DOM element
     this._cv._editor = this;
 
     return this;
+  }
+
+  _startLoop() {
+    const loop = () => {
+      this._animId = requestAnimationFrame(loop);
+      const g = getActiveGizmo();
+      if (g && g.visible && state.targetObject) {
+        if (selected.size > 1) {
+          const c = new THREE.Vector3();
+          for (const m of selected) c.add(m.position);
+          c.divideScalar(selected.size);
+          g.position.copy(c);
+        } else {
+          g.position.copy(state.targetObject.position);
+        }
+      }
+      sceneRefs.orbit.update();
+      sceneRefs.composer.render();
+    };
+    loop();
   }
 
   _patchSaveLoad() {
