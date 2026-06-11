@@ -31,6 +31,7 @@ jobs:
           mkdir -p _site
           cp -r dist _site/
           cp -r site/index.html _site/
+          cp -r editor _site/
           cp -r embedding _site/
           cp -r screenshots _site/
       - name: Upload Pages artifact

@@ -26,9 +26,15 @@ import { showSaveLoadUI, loadFromData, exportSceneData } from './saveload.js';
 import { history, actCreate } from './history.js';
 import { cancelDropMode, startDropMode } from './drop-mode.js';
 import { delSel, dupSel } from './objects.js';
-
-// Inline CSS injection
-const LIB_CSS = /* inject:css */ true; // Vite will replace this
+// Inject CSS into the page (inlined in JS bundle, no extra HTTP request)
+import cssStyle from '../css/style.css?inline';
+(function() {
+  if (typeof document === 'undefined' || document.getElementById('__pb_css')) return;
+  const s = document.createElement('style');
+  s.id = '__pb_css';
+  s.textContent = cssStyle;
+  document.head.appendChild(s);
+})();
 
 export class PrimitiveEditor {
   constructor(container, options = {}) {
