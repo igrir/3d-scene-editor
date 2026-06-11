@@ -7,9 +7,7 @@ Include the full 3D scene editor on any website with a single `<script>` tag and
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <link rel="stylesheet" href="dist/3d-primitive-builder.css">
-</head>
+<head></head>
 <body>
 
   <div id="editor" style="width:100%;height:500px"></div>
@@ -44,19 +42,19 @@ npm run build
 
 Output:
 ```
-dist/3d-primitive-builder.umd.js   — UMD bundle (623 KB, ~163 KB gzipped)
+dist/3d-primitive-builder.umd.js   — UMD bundle (623 KB, ~163 KB gzipped) — CSS is inlined
 dist/3d-primitive-builder.es.js    — ES module bundle
-dist/3d-primitive-builder.css      — Styles
 ```
 
 ## Script Tag (CDN)
 
-Host the built files on any static server, or use a CDN:
+Host the built file on any static server, or use a CDN:
 
 ```html
-<link rel="stylesheet" href="https://your-cdn.com/3d-primitive-builder.css">
 <script src="https://your-cdn.com/3d-primitive-builder.umd.js"></script>
 ```
+
+> No separate CSS file needed — styles are injected automatically by the JS.
 
 ## API Reference
 

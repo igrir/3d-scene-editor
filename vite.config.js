@@ -13,12 +13,9 @@ export default defineConfig({
       fileName: (format) => `3d-primitive-builder.${format}.js`,
     },
     rollupOptions: {
-      // Keep Three.js external for CDN use
-      external: [],
       output: {
-        globals: {},
         assetFileNames: (assetInfo) => {
-          if (assetInfo.name === 'style.css') return '3d-primitive-builder.css';
+          if (assetInfo.name.endsWith('.css')) return '3d-primitive-builder.css';
           return assetInfo.name;
         },
       },
