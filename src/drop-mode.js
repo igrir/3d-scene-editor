@@ -38,6 +38,14 @@ export function startDropMode(t) {
     ht.classList.add('active');
     ht.textContent = '\u{1F4CD} Arahkan & klik letakkan \u00B7 Esc batal';
   }
+  // Collapse panel to give more 3D space while placing
+  const panel = document.getElementById('panel');
+  if (panel && !panel.classList.contains('collapsed')) {
+    panel.classList.add('collapsed');
+    const icon = document.getElementById('pnl-toggle-icon');
+    if (icon) icon.textContent = '\u25B2';
+    setTimeout(() => { if (sceneRefs.resize) sceneRefs.resize(); }, 50);
+  }
 }
 
 export function updateGhost(e) {
