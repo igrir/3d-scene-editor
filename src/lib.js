@@ -24,7 +24,7 @@ import { setupInput } from './input.js';
 import { setupImportExport } from './import-export.js';
 import { showSaveLoadUI, loadFromData, exportSceneData } from './saveload.js';
 import { history, actCreate } from './history.js';
-import { cancelDropMode, startDropMode } from './drop-mode.js';
+import { cancelDropMode, startDropMode, placeGhost } from './drop-mode.js';
 import { delSel, dupSel } from './objects.js';
 // Inject CSS into the page (inlined in JS bundle, no extra HTTP request)
 import cssStyle from '../css/style.css?inline';
@@ -118,7 +118,13 @@ export class PrimitiveEditor {
       if (icons[img.dataset.t]) img.src = icons[img.dataset.t];
     });
 
-    // 7. Start animation loop
+    // 7. Wire up primitive buttons (normally in main.js)
+    this._wirePrimitiveButtons();
+
+    // 8. Wire up color swatches
+    this._wireColorSwatches();
+
+    // 9. Start animation loop
     this._startLoop();
 
     this._ready = true;
@@ -127,6 +133,41 @@ export class PrimitiveEditor {
     this._cv._editor = this;
 
     return this;
+  }
+
+  _wirePrimitiveButtons() {
+    document.querySelectorAll('.ob[data-t]').forEach(b => {
+      // Remove existing listeners to prevent duplicates if init() called multiple times
+      const clone = b.cloneNode(true);
+      b.parentNode.replaceChild(clone, b);
+      clone.addEventListener('click', () => {
+        const t = clone.dataset.t;
+        if (state.dropMode) {
+          if (state.dropMode.type === t && state.dropMode.ghost.visible) {
+            placeGhost();
+            return;
+          }
+          cancelDropMode();
+        }
+        startDropMode(t);
+      });
+    });
+  }
+
+  _wireColorSwatches() {
+    ['cc-recent', 'cc-custom'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const clone = el.cloneNode(true);
+      el.parentNode.replaceChild(clone, el);
+      clone.addEventListener('click', e => {
+        const sw = e.target.closest('span[data-c]');
+        if (!sw) return;
+        const c = sw.dataset.c;
+        if (id === 'cc-custom' && document.getElementById('cc-custom').classList.contains('editing')) return;
+        selectColorFinal(c);
+      });
+    });
   }
 
   _startLoop() {
