@@ -22,7 +22,7 @@ import { createGizmoInstances, getActiveGizmo, detachGizmo, attachGizmo } from '
 import { refreshSelection } from './selection.js';
 import { setupInput } from './input.js';
 import { setupImportExport } from './import-export.js';
-import { loadFromData, exportSceneData } from './saveload.js';
+import { loadFromData, exportSceneData, showSaveLoadUI } from './saveload.js';
 import { history, actCreate } from './history.js';
 import { cancelDropMode, startDropMode, placeGhost } from './drop-mode.js';
 import { delSel, dupSel } from './objects.js';
@@ -179,21 +179,24 @@ export class PrimitiveEditor {
   }
 
   _wireActionButtons() {
-    // Wire duplicate, delete, flip buttons (normally in main.js)
+    // Wire save/load, duplicate, delete buttons (normally in main.js)
+    this._wireButton('btn-saveload', () => showSaveLoadUI());
     [
       { id: 'bdup', action: dupSel },
       { id: 'btn-dup-tl', action: dupSel },
       { id: 'bddel', action: delSel },
       { id: 'btn-del-tl', action: delSel },
-    ].forEach(({ id, action }) => {
-      const btn = document.getElementById(id);
-      if (!btn) return;
-      const clone = btn.cloneNode(true);
-      btn.parentNode.replaceChild(clone, btn);
-      clone.addEventListener('click', action);
-    });
+    ].forEach(({ id, action }) => this._wireButton(id, action));
     // Flip buttons
     this._wireFlipButtons();
+  }
+
+  _wireButton(id, fn) {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    const clone = btn.cloneNode(true);
+    btn.parentNode.replaceChild(clone, btn);
+    clone.addEventListener('click', fn);
   }
 
   _wireFlipButtons() {
