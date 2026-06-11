@@ -35,7 +35,8 @@ import cssStyle from '../css/style.css?inline';
   const s = document.createElement('style');
   s.id = '__pb_css';
   // Only strip standalone body{...overflow:hidden...} — NOT #panel-body etc.
-  const cleaned = cssStyle.replace(/^body\{[^}]*\}/gm, (m) => {
+  // CSS is minified to one line by Vite, so use string start / semicolon anchor
+  const cleaned = cssStyle.replace(/(?:^|[;}])\s*body\{([^}]*)\}/g, (m) => {
     return m.replace(/overflow:[^;]+;?/g, '');
   });
   s.textContent = cleaned;
