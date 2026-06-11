@@ -70,6 +70,39 @@ npm run dev
 
 Or just open `index.html` directly in any modern browser (no build step needed).
 
+## 🌐 Embed on Any Website
+
+Include the library with a single script tag:
+
+```html
+<div id="editor"></div>
+<script src="dist/3d-primitive-builder.umd.js"></script>
+<script>
+  const editor = PrimitiveBuilder.create('#editor', { height: 500 }).init();
+</script>
+```
+
+Or use the `data-primitive-editor` attribute for zero-JS setup:
+
+```html
+<div data-primitive-editor='{"height":500}'></div>
+<script src="dist/3d-primitive-builder.umd.js"></script>
+```
+
+### Library API
+
+| Method | Description |
+|--------|-------------|
+| `editor.init()` | Initialize the 3D scene (async) |
+| `editor.loadScene(data)` | Load scene from JSON array |
+| `editor.getSceneData()` | Export scene as JSON |
+| `editor.addPrimitive(type)` | Add a primitive object |
+| `editor.clearScene()` | Remove all objects |
+| `editor.setBackgroundColor(hex)` | Change scene background |
+| `editor.destroy()` | Clean up and remove |
+
+Build the library: `npm run build` — outputs `dist/3d-primitive-builder.umd.js` (~163KB gzipped) and `dist/3d-primitive-builder.css`.
+
 ## 🧰 Tech Stack
 
 - **Three.js** (r157) — WebGL rendering, scene graph, raycasting

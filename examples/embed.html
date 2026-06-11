@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Embedded 3D Builder — Example</title>
+<style>
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #13131f;
+    color: #eee;
+  }
+  .header {
+    padding: 32px 24px 16px;
+    text-align: center;
+  }
+  .header h1 { margin: 0 0 4px; font-size: 28px; }
+  .header p { margin: 0; opacity: .6; font-size: 14px; }
+  #builder-container {
+    max-width: 1000px;
+    margin: 16px auto;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,.5);
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  .controls {
+    max-width: 1000px;
+    margin: 12px auto;
+    display: flex;
+    gap: 8px;
+    padding: 0 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .controls button {
+    padding: 8px 20px;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 10px;
+    background: rgba(255,255,255,.06);
+    color: #ddd;
+    cursor: pointer;
+    font-size: 14px;
+    transition: .15s;
+  }
+  .controls button:hover {
+    background: rgba(233,69,96,.15);
+    border-color: #e94560;
+    color: #fff;
+  }
+  pre {
+    max-width: 1000px;
+    margin: 16px auto;
+    padding: 16px;
+    background: rgba(0,0,0,.3);
+    border-radius: 12px;
+    font-size: 13px;
+    overflow-x: auto;
+  }
+  .footer {
+    text-align: center;
+    padding: 24px;
+    opacity: .4;
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🏠 3D Primitive Builder</h1>
+  <p>Embedded with a single <code>&lt;script&gt;</code> tag</p>
+</div>
+
+<div id="builder-container"></div>
+
+<div class="controls">
+  <button onclick="addCube()">➕ Box</button>
+  <button onclick="addSphere()">🔵 Sphere</button>
+  <button onclick="addTorus()">⭕ Torus</button>
+  <button onclick="exportJSON()">📦 Export</button>
+  <button onclick="clearAll()">🗑️ Clear</button>
+</div>
+
+<pre id="output">// Scene data will appear here</pre>
+
+<div class="footer">
+  Built with Three.js — <a href="https://github.com/igrir/3d-primitive-builder" style="color:#e94560">GitHub</a>
+</div>
+
+<script src="/dist/3d-primitive-builder.umd.js"></script>
+<script>
+  let editor;
+
+  async function start() {
+    editor = await PrimitiveBuilder.create('#builder-container', {
+      height: 520,
+    }).init();
+    
+    // Listen to scene changes
+    updateOutput();
+  }
+
+  function addCube() { editor.addPrimitive('box'); updateOutput(); }
+  function addSphere() { editor.addPrimitive('sphere'); updateOutput(); }
+  function addTorus() { editor.addPrimitive('torus'); updateOutput(); }
+  function clearAll() { editor.clearScene(); updateOutput(); }
+  function exportJSON() {
+    const data = editor.getSceneData();
+    document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+  }
+  function updateOutput() { exportJSON(); }
+
+  start();
+</script>
+</body>
+</html>
