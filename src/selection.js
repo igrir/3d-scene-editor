@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { objects, selected, state, sceneRefs } from './state.js';
 import { attachGizmo, detachGizmo } from './gizmo/index.js';
-import { refreshPanel } from './panels.js';
+import { refreshPanel, syncBarColorToSelection } from './panels.js';
 
 export function unhighlight() {
   objects.forEach(m => {
@@ -31,4 +31,5 @@ export function refreshSelection() {
     detachGizmo();
   }
   refreshPanel();
+  syncBarColorToSelection();
 }

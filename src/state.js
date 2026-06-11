@@ -1,3 +1,5 @@
+import { DEFAULT_COLOR } from './constants.js';
+
 // ── Shared mutable state for the entire app ──
 
 export const objects = [];
@@ -8,10 +10,11 @@ export const state = {
   targetObject: null,
   multiTargets: [],
   multiInitStates: null,
-  nextColor: '#e94560',
-  gizmoMode: 'advanced',
-  xzMode: 'plane',
+  nextColor: DEFAULT_COLOR,
+  gizmoMode: 'simple',
+  xzMode: 'surface',
   selectMode: 'default',
+  toolMode: 'select',
   dropMode: null,
   editingObject: null,
   focusSnapshot: null,

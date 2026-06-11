@@ -22,8 +22,7 @@ export function initScene(container) {
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.0;
+  renderer.toneMapping = THREE.NoToneMapping;
   container.appendChild(renderer.domElement);
 
   const orbit = new OrbitControls(camera, renderer.domElement);
@@ -42,6 +41,8 @@ export function initScene(container) {
   sun.position.set(8, 12, 6);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.bias = -0.0005;
+  sun.shadow.normalBias = 0.005;
   scene.add(sun);
 
   scene.add(new THREE.DirectionalLight(0x8888ff, 0.4).position.set(-4, 3, -4));

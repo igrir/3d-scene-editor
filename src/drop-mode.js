@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { state, sceneRefs, dropTargets, selected } from './state.js';
-import { getGeom, halfHeight, createObj } from './objects.js';
+import { getCreateGeom, createObj } from './objects.js';
 import { history, actCreate } from './history.js';
 import { refreshSelection } from './selection.js';
 
@@ -21,7 +21,7 @@ export function cancelDropMode() {
 
 export function startDropMode(t) {
   cancelDropMode();
-  const geo = getGeom(t);
+  const geo = getCreateGeom(t);
   const mat = new THREE.MeshBasicMaterial({
     color: new THREE.Color(state.nextColor), transparent: true, opacity: 0.35,
     depthTest: false, depthWrite: false,
@@ -53,8 +53,10 @@ export function updateGhost(e) {
   if (hits.length > 0) {
     const hit = hits[0];
     const n = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
-    const o = halfHeight(state.dropMode.type);
-    state.dropMode.ghost.position.copy(hit.point.clone().add(n.clone().multiplyScalar(o)));
+    const ghostGeo = state.dropMode.ghost.geometry;
+    ghostGeo.computeBoundingBox();
+    const hh = ghostGeo.boundingBox ? -ghostGeo.boundingBox.min.y : 0.5;
+    state.dropMode.ghost.position.copy(hit.point.clone().add(n.clone().multiplyScalar(hh)));
     state.dropMode.ghost.visible = true;
     if (hit.object !== sceneRefs.shadowPlane && Math.abs(n.y) < 0.99) {
       state.dropMode.ghost.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), n));
@@ -80,8 +82,10 @@ export function placeGhost(p) {
       if (hits.length) {
         const hit = hits[0];
         const n = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
-        const o = halfHeight(state.dropMode.type);
-        state.dropMode.ghost.position.copy(hit.point.clone().add(n.clone().multiplyScalar(o)));
+        const ghostGeo = state.dropMode.ghost.geometry;
+        ghostGeo.computeBoundingBox();
+        const hh = ghostGeo.boundingBox ? -ghostGeo.boundingBox.min.y : 0.5;
+        state.dropMode.ghost.position.copy(hit.point.clone().add(n.clone().multiplyScalar(hh)));
         state.dropMode.ghost.visible = true;
         if (hit.object !== sceneRefs.shadowPlane && Math.abs(n.y) < 0.99) {
           state.dropMode.ghost.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), n));

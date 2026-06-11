@@ -3,13 +3,13 @@ import { state, sceneRefs, objects, dropTargets, selected } from './state.js';
 import { DEFAULT_COLOR } from './constants.js';
 import { initScene } from './scene.js';
 import { createObj, generateAllIcons } from './objects.js';
-import { createUI, refreshPanel } from './panels.js';
+import { createUI, refreshPanel, selectColor, selectColorFinal, trackColor, addColor, renderCustom, renderRecent } from './panels.js';
 import { createGizmoInstances, getActiveGizmo, detachGizmo } from './gizmo/index.js';
 import { refreshSelection } from './selection.js';
 import { setupInput } from './input.js';
 import { setupImportExport } from './import-export.js';
 import { showSaveLoadUI } from './saveload.js';
-import { history, actCreate, actColor } from './history.js';
+import { history, actCreate } from './history.js';
 import { cancelDropMode, startDropMode, placeGhost } from './drop-mode.js';
 import { delSel, dupSel } from './objects.js';
 
@@ -35,10 +35,17 @@ setupInput();
 setupImportExport();
 
 // 6. Generate primitive icons
-const icons = generateAllIcons();
+let icons = generateAllIcons(state.nextColor);
 document.querySelectorAll('.ob-icon').forEach(img => {
   if (icons[img.dataset.t]) img.src = icons[img.dataset.t];
 });
+// Expose refreshIcons for color changes
+window._refreshIcons = (color) => {
+  icons = generateAllIcons(color);
+  document.querySelectorAll('.ob-icon').forEach(img => {
+    if (icons[img.dataset.t]) img.src = icons[img.dataset.t];
+  });
+};
 
 // 7. Save/Load button
 document.getElementById('btn-saveload').addEventListener('click', () => showSaveLoadUI());
@@ -63,42 +70,15 @@ document.querySelectorAll('.ob[data-t]').forEach(b => {
   });
 });
 
-// Color picker
-document.getElementById('cp').addEventListener('input', () => {
-  const selMeshes = [...selected].filter(m => !m.isGroup);
-  const oc = selMeshes.map(m => m.material.color.getHex());
-  const nc = document.getElementById('cp').value;
-  state.nextColor = nc;
-  document.getElementById('ch').textContent = nc;
-  if (state.dropMode && state.dropMode.ghost) {
-    state.dropMode.ghost.material.color.set(nc);
-  }
-  if (selMeshes.length) {
-    const c = new THREE.Color(nc);
-    selMeshes.forEach(m => m.material.color.copy(c));
-    history.execute(actColor(selMeshes, oc, nc));
-    refreshPanel();
-  }
-});
-
-// Color swatches
-document.querySelectorAll('.cc span').forEach(el => {
-  el.addEventListener('click', () => {
-    const c = el.dataset.c;
-    const selMeshes = [...selected].filter(m => !m.isGroup);
-    const oc = selMeshes.map(m => m.material.color.getHex());
-    document.getElementById('cp').value = c;
-    document.getElementById('ch').textContent = c;
-    state.nextColor = c;
-    if (state.dropMode && state.dropMode.ghost) {
-      state.dropMode.ghost.material.color.set(c);
-    }
-    if (selMeshes.length) {
-      const col = new THREE.Color(c);
-      selMeshes.forEach(m => m.material.color.copy(col));
-      history.execute(actColor(selMeshes, oc, c));
-      refreshPanel();
-    }
+// Color swatches — event delegation on containers
+['cc-recent', 'cc-custom'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => {
+    const sw = e.target.closest('span[data-c]');
+    if (!sw) return;
+    const c = sw.dataset.c;
+    // In cc-custom edit mode, deleteColor handles it in panels.js
+    if (id === 'cc-custom' && document.getElementById('cc-custom').classList.contains('editing')) return;
+    selectColorFinal(c);
   });
 });
 
@@ -113,6 +93,25 @@ document.getElementById('btn-dup-tl').addEventListener('click', dupSel);
 // Delete
 document.getElementById('bddel').addEventListener('click', delSel);
 document.getElementById('btn-del-tl').addEventListener('click', delSel);
+
+// Flip
+document.getElementById('btn-fliph').addEventListener('click', () => flipSel('x'));
+document.getElementById('btn-flipv').addEventListener('click', () => flipSel('y'));
+
+function flipSel(axis) {
+  if (!selected.size) return;
+  const ai = axis === 'x' ? 0 : axis === 'y' ? 1 : 2;
+  const oldScales = [...selected].map(m => m.scale.clone());
+  for (const m of selected) {
+    m.scale.setComponent(ai, -m.scale.getComponent(ai));
+  }
+  const newScales = [...selected].map(m => m.scale.clone());
+  history.execute({
+    do: () => selected.forEach((m, i) => m.scale.copy(newScales[i])),
+    undo: () => selected.forEach((m, i) => m.scale.copy(oldScales[i])),
+  });
+  refreshPanel();
+}
 
 // Reset scene
 document.getElementById('bdrst').addEventListener('click', () => {

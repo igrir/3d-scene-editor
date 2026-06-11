@@ -3,9 +3,9 @@ import { state, sceneRefs, objects, selected, dropTargets } from './state.js';
 import { getActiveGizmo, gizmoHitTest } from './gizmo/index.js';
 import { gizmoStartDrag, gizmoDragUpdate, gizmoEndDrag, gizmoSetHover } from './transforms.js';
 import { refreshSelection } from './selection.js';
-import { refreshPanel } from './panels.js';
+import { refreshPanel, selectColorFinal } from './panels.js';
 import { updateGhost, placeGhost, cancelDropMode } from './drop-mode.js';
-import { history, actDelete } from './history.js';
+import { history, actDelete, actColor } from './history.js';
 
 export function setupInput() {
   const dom = sceneRefs.renderer.domElement;
@@ -75,6 +75,33 @@ export function setupInput() {
     const hits = hitObjs(e);
     if (hits.length > 0) {
       const obj = hits[0].object;
+
+      // Paint bucket
+      if (state.toolMode === 'paint') {
+        if (!obj.isGroup && obj.material && obj.material.color) {
+          const oc = obj.material.color.getHex();
+          const nc = state.nextColor;
+          obj.material.color.set(nc);
+          history.execute(actColor([obj], [oc], nc));
+          refreshPanel();
+        }
+        return;
+      }
+
+      // Eyedropper — pick color from object, then back to select
+      if (state.toolMode === 'eyedrop') {
+        if (!obj.isGroup && obj.material && obj.material.color) {
+          const c = '#' + obj.material.color.getHexString();
+          selectColorFinal(c);
+          // Auto-reset to select mode
+          state.toolMode = 'select';
+          document.querySelectorAll('#tl-tools .tl-btn').forEach(b => b.classList.remove('on', 'active-tool'));
+          document.getElementById('sel-default').classList.add('on');
+        }
+        return;
+      }
+
+      // Normal selection
       if (e.ctrlKey || e.metaKey) {
         if (selected.has(obj)) selected.delete(obj);
         else selected.add(obj);
@@ -158,8 +185,9 @@ export function setupInput() {
       state.rectStart = state.rectEnd = null;
 
       // Auto revert to default select mode
+      state.toolMode = 'select';
       state.selectMode = 'default';
-      document.querySelectorAll('#tl-tools .tl-btn').forEach(b => b.classList.remove('on'));
+      document.querySelectorAll('#tl-tools .tl-btn').forEach(b => b.classList.remove('on', 'active-tool'));
       document.getElementById('sel-default').classList.add('on');
       refreshSelection();
     }

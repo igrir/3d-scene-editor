@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { state, objects, dropTargets, selected, sceneRefs } from './state.js';
 import { refreshSelection } from './selection.js';
 import { history, actDelete, actDuplicate } from './history.js';
@@ -16,8 +17,8 @@ export function getGeom(t) {
     case 'halfball': return new THREE.SphereGeometry(0.6, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2);
     case 'quarterball': return new THREE.SphereGeometry(0.6, 24, 16, 0, Math.PI / 2, 0, Math.PI / 2);
     case 'bowl': return new THREE.BoxGeometry(0.7, 0.4, 0.7);
-    case 'isotriangle': return new THREE.BoxGeometry(0.8, 0.7, 0.1);
-    case 'righttriangle': return new THREE.BoxGeometry(0.8, 0.7, 0.1);
+    case 'isotriangle': return makeTriShape([[-0.5, -0.5], [0.5, -0.5], [0, 0.5]]);
+    case 'righttriangle': return makeTriShape([[-0.5, -0.5], [0.5, -0.5], [-0.5, 0.5]]);
     case 'torus': return new THREE.TorusGeometry(0.5, 0.18, 16, 24);
     case 'plane': return new THREE.BoxGeometry(1, 0.06, 1);
     case 'image': return new THREE.PlaneGeometry(1, 1);
@@ -26,7 +27,7 @@ export function getGeom(t) {
 }
 
 export function halfHeight(t) {
-  return { box: 0.5, sphere: 0.6, cylinder: 0.5, cone: 0.5, torus: 0.18, plane: 0.03, image: 0.005, halfdonut: 0.18, donut: 0.18, quarterdonut: 0.18, halfball: 0.3, quarterball: 0.3, bowl: 0.25, isotriangle: 0.25, righttriangle: 0.25 }[t] ?? 0.5;
+  return { box: 0.5, sphere: 0.6, cylinder: 0.5, cone: 0.5, torus: 0.18, plane: 0.03, image: 0.005, halfdonut: 0.18, donut: 0.18, quarterdonut: 0.18, halfball: 0.3, quarterball: 0.3, bowl: 0.5, isotriangle: 0.5, righttriangle: 0.5 }[t] ?? 0.5;
 }
 
 export function makePlaceholderTex() {
@@ -60,24 +61,47 @@ function makeTriShape(pts) {
   const shape = new THREE.Shape();
   pts.forEach((p, i) => i === 0 ? shape.moveTo(p[0], p[1]) : shape.lineTo(p[0], p[1]));
   shape.closePath();
-  return new THREE.ExtrudeGeometry(shape, { depth: 0.1, bevelEnabled: false });
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: 0.1, bevelEnabled: false });
+  // Shift up so bottom sits at y=0
+  const minY = Math.min(...pts.map(p => p[1]));
+  geo.translate(0, -minY, -0.05);
+  return smoothGeo(geo);
+}
+
+function smoothGeo(g) {
+  try { g = mergeVertices(g, 0.001); } catch(e) {}
+  g.computeVertexNormals();
+  return g;
 }
 
 function getPrimitiveGeo(t) {
   switch (t) {
-    case 'halfdonut': return new THREE.TorusGeometry(0.5, 0.18, 16, 24, Math.PI);
+    case 'halfdonut': return smoothGeo(new THREE.TorusGeometry(0.5, 0.18, 24, 40, Math.PI));
     case 'donut': return new THREE.TorusGeometry(0.5, 0.18, 16, 24);
-    case 'quarterdonut': return new THREE.TorusGeometry(0.5, 0.18, 16, 24, Math.PI / 2);
-    case 'halfball': return new THREE.SphereGeometry(0.6, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2);
-    case 'quarterball': return new THREE.SphereGeometry(0.6, 24, 16, 0, Math.PI / 2, 0, Math.PI / 2);
+    case 'quarterdonut': return smoothGeo(new THREE.TorusGeometry(0.5, 0.18, 24, 40, Math.PI / 2));
+    case 'halfball': return smoothGeo(new THREE.SphereGeometry(0.6, 32, 24, 0, Math.PI * 2, 0, Math.PI / 2));
+    case 'quarterball': return smoothGeo(new THREE.SphereGeometry(0.6, 32, 24, 0, Math.PI / 2, 0, Math.PI / 2));
     case 'bowl': {
       const pts = [];
-      for (let i = 0; i <= 20; i++) {
-        const a = (i / 20) * Math.PI * 0.45;
-        const r = 0.5 - 0.02 * i;
-        pts.push(new THREE.Vector2(r * Math.sin(a) + 0.02, r * Math.cos(a)));
+      const R = 0.5;
+      const thickness = 0.06;
+      const innerR = R - thickness;
+      const steps = 16;
+      // Outer surface: outer rim → bottom (quarter circle)
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const a = t * Math.PI * 0.5;
+        pts.push(new THREE.Vector2(R * Math.cos(a), -R * Math.sin(a)));
       }
-      return new THREE.LatheGeometry(pts, 24);
+      // Inner surface: bottom → inner rim (quarter circle, smaller radius)
+      for (let i = steps; i >= 0; i--) {
+        const t = i / steps;
+        const a = t * Math.PI * 0.5;
+        pts.push(new THREE.Vector2(innerR * Math.cos(a), -innerR * Math.sin(a)));
+      }
+      // Close rim: inner rim → outer rim
+      pts.push(new THREE.Vector2(R, 0));
+      return smoothGeo(new THREE.LatheGeometry(pts, 48));
     }
     case 'isotriangle': return makeTriShape([[-0.5, -0.5], [0.5, -0.5], [0, 0.5]]);
     case 'righttriangle': return makeTriShape([[-0.5, -0.5], [0.5, -0.5], [-0.5, 0.5]]);
@@ -85,13 +109,18 @@ function getPrimitiveGeo(t) {
   }
 }
 
+export function getCreateGeom(t) {
+  if (t === 'image' || t === 'bookshelf') return getGeom(t);
+  return getPrimitiveGeo(t) || getGeom(t);
+}
+
 export function createObj(t, imgSrc) {
   const primGeo = (t !== 'image' && t !== 'bookshelf') ? getPrimitiveGeo(t) : null;
   if (primGeo) {
     const mat = new THREE.MeshStandardMaterial({
       color: new THREE.Color(state.nextColor),
-      roughness: 0.3,
-      metalness: 0.05,
+      roughness: 0.7,
+      metalness: 0,
       side: THREE.DoubleSide,
     });
     const m = new THREE.Mesh(primGeo, mat);
@@ -130,8 +159,9 @@ export function createObj(t, imgSrc) {
   } else {
     mat = new THREE.MeshStandardMaterial({
       color: new THREE.Color(state.nextColor),
-      roughness: 0.3,
-      metalness: 0.05
+      roughness: 0.7,
+      metalness: 0,
+      side: THREE.DoubleSide,
     });
     m = new THREE.Mesh(geo, mat);
     m.castShadow = true;
@@ -206,33 +236,43 @@ export function dupSel() {
 
 // ── Icon generation ──
 
-export function generateAllIcons() {
+let _iconRenderer = null, _iconScene = null, _iconCam = null, _iconCvs = null;
+
+function getIconRenderer() {
+  if (!_iconRenderer) {
+    _iconCvs = document.createElement('canvas');
+    _iconCvs.width = 64; _iconCvs.height = 64;
+    _iconRenderer = new THREE.WebGLRenderer({ canvas: _iconCvs, alpha: true, antialias: true });
+    _iconRenderer.setPixelRatio(1);
+    _iconScene = new THREE.Scene();
+    _iconScene.background = new THREE.Color(0xE8E8F0);
+    _iconCam = new THREE.PerspectiveCamera(28, 1, 0.1, 20);
+  }
+  return _iconRenderer;
+}
+
+export function generateAllIcons(color) {
   const icons = {};
   const iconTypes = ['box','sphere','cylinder','cone','torus','halfdonut','quarterdonut','halfball','quarterball','bowl','isotriangle','righttriangle','plane'];
   
-  const cvs = document.createElement('canvas');
-  cvs.width = 64; cvs.height = 64;
-  const renderer = new THREE.WebGLRenderer({ canvas: cvs, alpha: true, antialias: true });
-  renderer.setPixelRatio(1);
+  const renderer = getIconRenderer();
+  const sc = _iconScene;
+  const cam = _iconCam;
+  const cvs = _iconCvs;
   
-  const sc = new THREE.Scene();
-  const cam = new THREE.PerspectiveCamera(28, 1, 0.1, 20);
+  // Clear scene
+  while (sc.children.length) sc.remove(sc.children[0]);
   
   const light = new THREE.DirectionalLight(0xffffff, 1.2);
   light.position.set(2, 3, 2);
   sc.add(light);
   sc.add(new THREE.AmbientLight(0xffffff, 0.4));
   
-  // sky-like background
-  sc.background = new THREE.Color(0xE8E8F0);
-  
   iconTypes.forEach(t => {
-    // Clean scene except lights
+    // Remove previous mesh, keep lights
     while (sc.children.length > 2) sc.remove(sc.children[0]);
-    sc.add(light);
-    sc.add(new THREE.AmbientLight(0xffffff, 0.4));
     
-    const mesh = createObjIcon(t);
+    const mesh = createObjIcon(t, color);
     if (!mesh) return;
     sc.add(mesh);
     
@@ -247,11 +287,11 @@ export function generateAllIcons() {
     const ctr = bx2.getCenter(new THREE.Vector3());
     mesh.position.sub(ctr);
     
-    // Camera position based on type
+    // Camera position based on type — pull back so the whole object fits nicely
     if (t === 'plane' || t === 'isotriangle' || t === 'righttriangle') {
-      cam.position.set(0.8, 0.6, 1.2);
+      cam.position.set(2.5, 1.5, 3.5);
     } else {
-      cam.position.set(1.2, 0.8, 1.2);
+      cam.position.set(3, 2, 3.5);
     }
     cam.lookAt(0, 0, 0);
     
@@ -263,17 +303,16 @@ export function generateAllIcons() {
     if (mesh.material) mesh.material.dispose();
   });
   
-  renderer.dispose();
   return icons;
 }
 
-function createObjIcon(t) {
+function createObjIcon(t, color) {
   const primGeo = getPrimitiveGeo(t);
   const geo = primGeo || getGeom(t);
   const mat = new THREE.MeshStandardMaterial({
-    color: 0x8888bb,
-    roughness: 0.3,
-    metalness: 0.05,
+    color: color || 0x8888bb,
+    roughness: 0.7,
+    metalness: 0,
     side: THREE.DoubleSide,
   });
   const m = new THREE.Mesh(geo, mat);

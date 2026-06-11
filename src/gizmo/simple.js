@@ -47,13 +47,7 @@ export class SimpleGizmo extends THREE.Group {
     gZ.userData = { action: 'xz', gizmo: this };
     this.add(gZ); this.parts.push(gZ);
 
-    // Y shaft
-    const yShaft = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.65, 8), M(0x66ff66, 0.85));
-    yShaft.position.set(0, 0.525, 0);
-    yShaft.userData = { action: 'y', gizmo: this };
-    this.add(yShaft); this.parts.push(yShaft);
-
-    // Y tip
+    // Y tip (no shaft)
     const yTip = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.22, 8), M(0x66ff66, 0.85));
     yTip.position.set(0, 0.95, 0);
     yTip.userData = { action: 'y', gizmo: this };
@@ -65,8 +59,8 @@ export class SimpleGizmo extends THREE.Group {
     yRing.userData = { action: 'rotateY', gizmo: this };
     this.add(yRing); this.parts.push(yRing);
 
-    // Uniform scale
-    const sc = new THREE.Mesh(new THREE.OctahedronGeometry(0.09, 0), M(0xffffff, 0.85));
+    // Uniform scale — bigger cube
+    const sc = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.18, 0.18), M(0xffffff, 0.85));
     sc.position.y = 0.02;
     sc.userData = { action: 'scale', gizmo: this };
     this.add(sc); this.parts.push(sc);
@@ -160,6 +154,8 @@ export class SimpleGizmo extends THREE.Group {
           if (hit.object !== sceneRefs.shadowPlane) {
             if (Math.abs(normal.y) < 0.99) {
               state.targetObject.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal));
+            } else {
+              state.targetObject.quaternion.identity();
             }
           } else {
             state.targetObject.quaternion.identity();

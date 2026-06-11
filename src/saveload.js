@@ -254,10 +254,32 @@ export function showSaveLoadUI() {
       // Info
       const info = document.createElement('div');
       info.style.cssText = 'flex:1;min-width:0;';
-      const title = document.createElement('div');
-      title.style.cssText = 'font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+      const titleRow = document.createElement('div');
+      titleRow.style.cssText = 'display:flex;align-items:center;gap:4px';
+      const title = document.createElement('span');
+      title.style.cssText = 'font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1';
       title.textContent = s.name;
-      info.appendChild(title);
+      titleRow.appendChild(title);
+      const renameBtn = document.createElement('button');
+      renameBtn.textContent = '\u270F\uFE0F';
+      renameBtn.style.cssText = `
+        padding:2px 4px;border:none;border-radius:4px;cursor:pointer;
+        font-size:11px;background:transparent;color:#888;flex-shrink:0;
+      `;
+      renameBtn.title = 'Rename';
+      renameBtn.onclick = e => {
+        e.stopPropagation();
+        const newName = prompt('Rename:', s.name);
+        if (newName && newName !== s.name) {
+          const saves = getSaves();
+          const found = saves.find(sv => sv.id === s.id);
+          if (found) { found.name = newName; saveSaves(saves); }
+          ov.remove();
+          showSaveLoadUI();
+        }
+      };
+      titleRow.appendChild(renameBtn);
+      info.appendChild(titleRow);
       const date = document.createElement('div');
       date.style.cssText = 'font-size:11px;opacity:.5;';
       date.textContent = new Date(s.timestamp).toLocaleString('id-ID');
@@ -305,4 +327,71 @@ export function showSaveLoadUI() {
 
   ov.appendChild(box);
   document.body.appendChild(ov);
+}
+
+// ── Sample projects ──
+
+export const SAMPLES = {
+  'Rumah': [
+    { type: 'box', pos: [0, 0.6, 0], scl: [2, 1.2, 1.6], color: '#e8d4a2' },
+    { type: 'cone', pos: [0, 1.5, 0], scl: [2.4, 0.7, 1.8], color: '#b54b3d' },
+    { type: 'box', pos: [-0.6, 0.3, 0.81], scl: [0.5, 0.6, 0.02], color: '#6b3a2a' },
+    { type: 'box', pos: [0.6, 0.3, 0.81], scl: [0.5, 0.6, 0.02], color: '#6b3a2a' },
+    { type: 'box', pos: [0, 0.4, -0.81], scl: [0.6, 0.8, 0.02], color: '#4a3520' },
+    { type: 'cylinder', pos: [0, 0, 0], scl: [0.06, 0.02, 0.06], color: '#8b7355' },
+  ],
+  'Gedung': [
+    { type: 'box', pos: [0, 1.5, 0], scl: [2.4, 3, 1.6], color: '#7a8a9e' },
+    { type: 'box', pos: [0, 3.2, 0], scl: [2.8, 0.15, 1.8], color: '#6b7b8f' },
+    { type: 'box', pos: [-0.6, 2.2, 0.81], scl: [0.4, 0.5, 0.02], color: '#a8d8ea' },
+    { type: 'box', pos: [0.6, 2.2, 0.81], scl: [0.4, 0.5, 0.02], color: '#a8d8ea' },
+    { type: 'box', pos: [-0.6, 1.2, 0.81], scl: [0.4, 0.5, 0.02], color: '#a8d8ea' },
+    { type: 'box', pos: [0.6, 1.2, 0.81], scl: [0.4, 0.5, 0.02], color: '#a8d8ea' },
+    { type: 'box', pos: [0, 0.4, -0.81], scl: [0.5, 0.8, 0.02], color: '#4a3520' },
+  ],
+  'Gunung': [
+    { type: 'cone', pos: [0, 0.8, 0], scl: [3, 1.6, 2.5], color: '#4a7c59' },
+    { type: 'cone', pos: [-1, 1.2, 0.8], scl: [1.5, 0.8, 1.2], color: '#5a8c69' },
+    { type: 'cone', pos: [0.8, 1.0, -0.6], scl: [1.2, 0.6, 1.0], color: '#5a8c69' },
+    { type: 'cone', pos: [1.2, 0.4, 1.0], scl: [0.8, 0.4, 0.8], color: '#6a9c79' },
+    { type: 'cone', pos: [-1.2, 0.3, -0.8], scl: [0.7, 0.3, 0.7], color: '#6a9c79' },
+    { type: 'sphere', pos: [0, 1.8, 0], scl: [0.2, 0.2, 0.2], color: '#ffffff' },
+    { type: 'cone', pos: [-0.5, 0.2, -1.5], scl: [0.6, 0.8, 0.6], color: '#3a6c49' },
+    { type: 'cone', pos: [1.5, 0.2, -0.5], scl: [0.6, 0.8, 0.6], color: '#3a6c49' },
+  ],
+  'Bunga': [
+    { type: 'cylinder', pos: [0, 0.5, 0], scl: [0.06, 1, 0.06], color: '#3a5c29' },
+    { type: 'sphere', pos: [0, 1.1, 0], scl: [0.35, 0.2, 0.2], color: '#e94560' },
+    { type: 'sphere', pos: [0.25, 1.0, 0.15], scl: [0.25, 0.18, 0.18], color: '#ff6b81' },
+    { type: 'sphere', pos: [-0.25, 1.0, 0.15], scl: [0.25, 0.18, 0.18], color: '#ff6b81' },
+    { type: 'sphere', pos: [0.15, 1.0, -0.25], scl: [0.25, 0.18, 0.18], color: '#ff6b81' },
+    { type: 'sphere', pos: [-0.15, 1.0, -0.25], scl: [0.25, 0.18, 0.18], color: '#ff6b81' },
+    { type: 'sphere', pos: [0, 1.3, 0], scl: [0.15, 0.15, 0.15], color: '#ffdd44' },
+    { type: 'cylinder', pos: [0.6, 0.3, 0.6], scl: [0.04, 0.6, 0.04], color: '#3a5c29' },
+    { type: 'sphere', pos: [0.6, 0.7, 0.6], scl: [0.2, 0.15, 0.15], color: '#ff6b81' },
+    { type: 'cylinder', pos: [-0.5, 0.2, -0.5], scl: [0.04, 0.4, 0.04], color: '#3a5c29' },
+    { type: 'sphere', pos: [-0.5, 0.5, -0.5], scl: [0.2, 0.15, 0.15], color: '#ff6b81' },
+  ],
+  'Rak Buku': [
+    { type: 'box', pos: [0, 1.2, 0], scl: [1.6, 2.4, 0.6], color: '#8b6b4b' },
+    { type: 'box', pos: [0, 0.6, 0.15], scl: [1.5, 0.08, 0.55], color: '#7a5c3d' },
+    { type: 'box', pos: [0, 1.3, 0.15], scl: [1.5, 0.08, 0.55], color: '#7a5c3d' },
+    { type: 'box', pos: [0, 2.0, 0.15], scl: [1.5, 0.08, 0.55], color: '#7a5c3d' },
+    { type: 'box', pos: [-0.55, 1.0, 0.15], scl: [0.08, 0.7, 0.55], color: '#6b4b2d' },
+    { type: 'box', pos: [0.55, 1.0, 0.15], scl: [0.08, 0.7, 0.55], color: '#6b4b2d' },
+    { type: 'box', pos: [-0.55, 1.7, 0.15], scl: [0.08, 0.7, 0.55], color: '#6b4b2d' },
+    { type: 'box', pos: [0.55, 1.7, 0.15], scl: [0.08, 0.7, 0.55], color: '#6b4b2d' },
+    { type: 'box', pos: [-0.3, 1.7, 0.35], scl: [0.15, 0.6, 0.08], color: '#e94560' },
+    { type: 'box', pos: [0.1, 1.6, 0.35], scl: [0.12, 0.5, 0.08], color: '#0f3460' },
+    { type: 'box', pos: [0.35, 1.8, 0.35], scl: [0.1, 0.4, 0.08], color: '#16a34a' },
+    { type: 'box', pos: [-0.25, 0.9, 0.35], scl: [0.15, 0.5, 0.08], color: '#f59e0b' },
+    { type: 'box', pos: [0.15, 0.95, 0.35], scl: [0.12, 0.55, 0.08], color: '#8b5cf6' },
+    { type: 'box', pos: [0.4, 0.8, 0.35], scl: [0.1, 0.35, 0.08], color: '#06b6d4' },
+  ],
+};
+
+export function loadSample(name) {
+  const data = SAMPLES[name];
+  if (!data) return;
+  loadFromData(data);
 }
