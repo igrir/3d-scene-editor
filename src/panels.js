@@ -288,13 +288,6 @@ export function refreshPanel() {
     si.innerHTML = '<span class="l">Click object to select</span>';
     sc.textContent = '\u2014';
     state.editingObject = null;
-    // Expand panel when nothing selected
-    if (panel) {
-      panel.classList.remove('collapsed');
-      const icon = document.getElementById('pnl-toggle-icon');
-      if (icon) icon.textContent = '\u25BC';
-      setTimeout(() => { if (sceneRefs.resize) sceneRefs.resize(); }, 50);
-    }
     return;
   }
   sc.textContent = selected.size;
