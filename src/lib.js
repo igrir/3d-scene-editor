@@ -131,7 +131,10 @@ export class PrimitiveEditor {
     // 8. Wire up color swatches
     this._wireColorSwatches();
 
-    // 9. Start animation loop
+    // 9. Wire up action buttons (duplicate, delete)
+    this._wireActionButtons();
+
+    // 10. Start animation loop
     this._startLoop();
 
     this._ready = true;
@@ -174,6 +177,22 @@ export class PrimitiveEditor {
         if (id === 'cc-custom' && document.getElementById('cc-custom').classList.contains('editing')) return;
         selectColorFinal(c);
       });
+    });
+  }
+
+  _wireActionButtons() {
+    // Wire duplicate and delete buttons (normally in main.js)
+    [
+      { id: 'bdup', action: dupSel },
+      { id: 'btn-dup-tl', action: dupSel },
+      { id: 'bddel', action: delSel },
+      { id: 'btn-del-tl', action: delSel },
+    ].forEach(({ id, action }) => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      const clone = btn.cloneNode(true);
+      btn.parentNode.replaceChild(clone, btn);
+      clone.addEventListener('click', action);
     });
   }
 
