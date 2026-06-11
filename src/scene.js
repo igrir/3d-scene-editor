@@ -41,8 +41,8 @@ export function initScene(container) {
   sun.position.set(8, 12, 6);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
-  sun.shadow.bias = -0.0005;
-  sun.shadow.normalBias = 0.005;
+  sun.shadow.bias = -0.001;
+  sun.shadow.normalBias = 0.0002;
   scene.add(sun);
 
   scene.add(new THREE.DirectionalLight(0x8888ff, 0.4).position.set(-4, 3, -4));

@@ -2,7 +2,7 @@
 
 > A browser-based 3D scene editor — place, transform, and style 3D primitives in real time. Built with Three.js.
 
-![Screenshot](screenshots/hero.png)
+![Screenshot](screenshots/hero.jpg)
 
 ## ✨ Features
 
