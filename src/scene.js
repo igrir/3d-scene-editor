@@ -45,7 +45,9 @@ export function initScene(container) {
   sun.shadow.normalBias = 0.0002;
   scene.add(sun);
 
-  scene.add(new THREE.DirectionalLight(0x8888ff, 0.4).position.set(-4, 3, -4));
+  const fillLight = new THREE.DirectionalLight(0x8888ff, 0.4);
+  fillLight.position.set(-4, 3, -4);
+  scene.add(fillLight);
   scene.add(new THREE.HemisphereLight(0x4466ff, 0x443322, 0.4));
 
   // SSAO
