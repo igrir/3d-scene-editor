@@ -200,12 +200,11 @@ export class SimpleGizmo extends THREE.Group {
         const projZ = delta.dot(gizmoZ);
         state.targetObject.position.copy(startPos.clone().add(gizmoX.clone().multiplyScalar(projX)).add(gizmoZ.clone().multiplyScalar(projZ)));
       }
-      // Ground marker at world Y=0.02
-      const xzGroundWPos = new THREE.Vector3(state.targetObject.position.x, 0.02, state.targetObject.position.z);
-      this.worldToLocal(xzGroundWPos);
-      this.groundRing.position.copy(xzGroundWPos);
-      this.groundDot.position.copy(xzGroundWPos);
-      const xzPos = this.dashLine.geometry.attributes.position.array; xzPos[1] = 0; xzPos[4] = xzGroundWPos.y;
+      // Ground marker at world Y=0.02 — compute local offset directly
+      const xzLocalY = 0.02 - this.position.y;
+      this.groundRing.position.set(0, xzLocalY, 0);
+      this.groundDot.position.set(0, xzLocalY, 0);
+      const xzPos = this.dashLine.geometry.attributes.position.array; xzPos[1] = 0; xzPos[4] = xzLocalY;
       this.dashLine.geometry.attributes.position.needsUpdate = true; this.dashLine.computeLineDistances();
     } else if (action === 'y') {
       // Use screen-space Y delta for intuitive vertical drag on mobile
@@ -213,14 +212,14 @@ export class SimpleGizmo extends THREE.Group {
       const screenDy = (mp.y - mouse.y) * camDist * 1.2;
       state.targetObject.position.y = startPos.y + screenDy;
       this.position.y = state.targetObject.position.y;
-      // Ground marker at world Y=0.02 (just above ground plane)
-      const groundWPos = new THREE.Vector3(state.targetObject.position.x, 0.02, state.targetObject.position.z);
-      this.worldToLocal(groundWPos);
-      this.groundRing.position.copy(groundWPos);
-      this.groundDot.position.copy(groundWPos);
+      // Ground marker at world Y=0.02 — compute local offset directly
+      // since gizmo has no parent transform, this.position IS world position
+      const gLocalY = 0.02 - this.position.y;
+      this.groundRing.position.set(0, gLocalY, 0);
+      this.groundDot.position.set(0, gLocalY, 0);
       // Dash line from gizmo local origin down to ground
       const pos = this.dashLine.geometry.attributes.position.array;
-      pos[1] = 0; pos[4] = groundWPos.y;
+      pos[1] = 0; pos[4] = gLocalY;
       this.dashLine.geometry.attributes.position.needsUpdate = true;
       this.dashLine.computeLineDistances();
     } else if (action === 'rotateY') {
