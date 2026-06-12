@@ -40,18 +40,33 @@ export class SimpleGizmo extends THREE.Group {
     gX.rotation.z = -Math.PI / 2; gX.position.set(0.45, 0, 0);
     gX.userData = { action: 'xz', gizmo: this };
     this.add(gX); this.parts.push(gX);
+    // Larger invisible hit zone for X arrow (touch-friendly)
+    const gXZone = new THREE.Mesh(new THREE.SphereGeometry(0.2, 6, 6), M(0xff6666, 0));
+    gXZone.position.set(0.45, 0, 0);
+    gXZone.userData = { action: 'xz', gizmo: this, zone: true, visiblePart: gX };
+    this.add(gXZone); this.parts.push(gXZone);
 
     // Z arrow
     const gZ = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.15, 6), M(0x6688ff, 0.6));
     gZ.rotation.x = Math.PI / 2; gZ.position.set(0, 0, 0.45);
     gZ.userData = { action: 'xz', gizmo: this };
     this.add(gZ); this.parts.push(gZ);
+    // Larger invisible hit zone for Z arrow (touch-friendly)
+    const gZZone = new THREE.Mesh(new THREE.SphereGeometry(0.2, 6, 6), M(0x6688ff, 0));
+    gZZone.position.set(0, 0, 0.45);
+    gZZone.userData = { action: 'xz', gizmo: this, zone: true, visiblePart: gZ };
+    this.add(gZZone); this.parts.push(gZZone);
 
     // Y tip (no shaft)
     const yTip = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.22, 8), M(0x66ff66, 0.85));
     yTip.position.set(0, 0.95, 0);
     yTip.userData = { action: 'y', gizmo: this };
     this.add(yTip); this.parts.push(yTip);
+    // Larger invisible hit zone for Y (touch-friendly)
+    const yZone = new THREE.Mesh(new THREE.SphereGeometry(0.25, 8, 8), M(0x66ff66, 0));
+    yZone.position.set(0, 0.95, 0);
+    yZone.userData = { action: 'y', gizmo: this, zone: true, visiblePart: yTip };
+    this.add(yZone); this.parts.push(yZone);
 
     // Y rotation ring
     const yRing = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.025, 16, 32), M(0x66ff66, 0.45));
@@ -90,7 +105,11 @@ export class SimpleGizmo extends THREE.Group {
 
   hitTest(rc) {
     const h = rc.intersectObjects(this.parts, false);
-    return h.length ? h[0].object : null;
+    if (!h.length) return null;
+    const obj = h[0].object;
+    // If we hit an invisible touch zone, return its visual part instead
+    if (obj.userData.zone && obj.userData.visiblePart) return obj.userData.visiblePart;
+    return obj;
   }
 
   setHover(p) {
