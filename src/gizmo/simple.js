@@ -200,23 +200,27 @@ export class SimpleGizmo extends THREE.Group {
         const projZ = delta.dot(gizmoZ);
         state.targetObject.position.copy(startPos.clone().add(gizmoX.clone().multiplyScalar(projX)).add(gizmoZ.clone().multiplyScalar(projZ)));
       }
-      const y = state.targetObject.position.y;
-      this.groundRing.position.set(0, -y + 0.02, 0); this.groundDot.position.set(0, -y + 0.02, 0);
-      const pos = this.dashLine.geometry.attributes.position.array; pos[1] = 0; pos[4] = -y;
+      // Ground marker at world Y=0.02
+      const xzGroundWPos = new THREE.Vector3(state.targetObject.position.x, 0.02, state.targetObject.position.z);
+      this.worldToLocal(xzGroundWPos);
+      this.groundRing.position.copy(xzGroundWPos);
+      this.groundDot.position.copy(xzGroundWPos);
+      const xzPos = this.dashLine.geometry.attributes.position.array; xzPos[1] = 0; xzPos[4] = xzGroundWPos.y;
       this.dashLine.geometry.attributes.position.needsUpdate = true; this.dashLine.computeLineDistances();
     } else if (action === 'y') {
       // Use screen-space Y delta for intuitive vertical drag on mobile
       const camDist = state.targetObject.position.distanceTo(sceneRefs.camera.position);
       const screenDy = (mp.y - mouse.y) * camDist * 1.2;
       state.targetObject.position.y = startPos.y + screenDy;
-      // Move gizmo with object so ground marker stays at ground
       this.position.y = state.targetObject.position.y;
-      const curY = state.targetObject.position.y;
-      this.groundRing.position.set(0, -curY + 0.02, 0);
-      this.groundDot.position.set(0, -curY + 0.02, 0);
-      // Dash line from object down to ground
+      // Ground marker at world Y=0.02 (just above ground plane)
+      const groundWPos = new THREE.Vector3(state.targetObject.position.x, 0.02, state.targetObject.position.z);
+      this.worldToLocal(groundWPos);
+      this.groundRing.position.copy(groundWPos);
+      this.groundDot.position.copy(groundWPos);
+      // Dash line from gizmo local origin down to ground
       const pos = this.dashLine.geometry.attributes.position.array;
-      pos[1] = 0; pos[4] = -curY;
+      pos[1] = 0; pos[4] = groundWPos.y;
       this.dashLine.geometry.attributes.position.needsUpdate = true;
       this.dashLine.computeLineDistances();
     } else if (action === 'rotateY') {
