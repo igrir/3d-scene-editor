@@ -201,7 +201,10 @@ export class SimpleGizmo extends THREE.Group {
       const pos = this.dashLine.geometry.attributes.position.array; pos[1] = 0; pos[4] = -y;
       this.dashLine.geometry.attributes.position.needsUpdate = true; this.dashLine.computeLineDistances();
     } else if (action === 'y') {
-      state.targetObject.position.y = startPos.y + delta.y;
+      // Use screen-space Y delta for intuitive vertical drag on mobile
+      const camDist = state.targetObject.position.distanceTo(sceneRefs.camera.position);
+      const screenDy = -(mp.y - mouse.y) * camDist * 1.2;
+      state.targetObject.position.y = startPos.y + screenDy;
       const y = state.targetObject.position.y;
       this.groundRing.position.set(0, -y + 0.02, 0); this.groundDot.position.set(0, -y + 0.02, 0);
       const pos = this.dashLine.geometry.attributes.position.array; pos[1] = 0; pos[4] = -y;
