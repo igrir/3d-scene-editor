@@ -140,10 +140,11 @@ export function groupSelected() {
     // Remove children from dropTargets so they don't act as surfaces
     const dtIdx = dropTargets.indexOf(m);
     if (dtIdx > -1) dropTargets.splice(dtIdx, 1);
-    // Clear selection highlight since unhighlight() won't find them anymore
-    if (!m.isGroup && m.material) {
-      m.material.emissive = new THREE.Color(0);
-      m.material.emissiveIntensity = 0;
+    // Remove from outline selection
+    if (sceneRefs.outlinePass) {
+      const arr = sceneRefs.outlinePass.selectedObjects;
+      const idx = arr.indexOf(m);
+      if (idx >= 0) arr.splice(idx, 1);
     }
   }
 

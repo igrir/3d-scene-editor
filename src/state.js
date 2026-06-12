@@ -17,6 +17,7 @@ export const state = {
   toolMode: 'select',
   dropMode: null,
   editingObject: null,
+  clipboard: [],
   focusSnapshot: null,
   scrubState: null,
   rectStart: null,

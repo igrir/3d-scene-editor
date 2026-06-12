@@ -219,6 +219,6 @@ export class SimpleGizmo extends THREE.Group {
     return r;
   }
 
-  attach(obj) { state.targetObject = obj; this.position.copy(obj.position); this.quaternion.copy(obj.quaternion); this.visible = true; }
+  attach(obj) { state.targetObject = obj; this.position.copy(obj.position); this.quaternion.identity(); this.visible = true; }
   detach() { state.targetObject = null; this.visible = false; this.endDrag(); }
 }

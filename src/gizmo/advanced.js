@@ -274,7 +274,7 @@ export class AdvancedGizmo extends THREE.Group {
   attach(obj) {
     state.targetObject = obj;
     this.position.copy(obj.position);
-    this.quaternion.copy(obj.quaternion);
+    this.quaternion.identity();
     this._resetVisibility();
     this.dragging = null;
     this.visible = true;

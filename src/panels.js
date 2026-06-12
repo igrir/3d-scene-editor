@@ -296,13 +296,6 @@ export function refreshPanel() {
     si.style.display = 'none';
     ed.style.display = '';
     populateEditor(m);
-    // Collapse panel when object selected — gives more 3D space
-    if (panel) {
-      panel.classList.add('collapsed');
-      const icon = document.getElementById('pnl-toggle-icon');
-      if (icon) icon.textContent = '\u25B2';
-      setTimeout(() => { if (sceneRefs.resize) sceneRefs.resize(); }, 50);
-    }
   }
 }
 
@@ -643,12 +636,12 @@ export function createUI() {
   const bgCr = createEl('div', { className: 'cr' });
   bgCr.style.marginBottom = '4px';
   bgCr.appendChild(createSmallLabel('Background'));
-  bgCr.appendChild(createEl('input', { type: 'color', id: 'bg-color', value: '#1a1a2e' }));
+  bgCr.appendChild(createEl('input', { type: 'color', id: 'bg-color', value: '#dedede' }));
   worldTab.appendChild(bgCr);
 
   const ambCr = createEl('div', { className: 'cr' });
   ambCr.appendChild(createSmallLabel('Ambient'));
-  ambCr.appendChild(createEl('input', { type: 'color', id: 'ambient-color', value: '#404060' }));
+  ambCr.appendChild(createEl('input', { type: 'color', id: 'ambient-color', value: '#8888bb' }));
   worldTab.appendChild(ambCr);
 
   content.appendChild(worldTab);
@@ -657,7 +650,6 @@ export function createUI() {
   panel.appendChild(panelBody);
   cv.appendChild(panel);
   panel.classList.add('collapsed');
-
   // ── JSON Modal ──
   const modal = createEl('div', { id: 'json-modal' });
   const box = createEl('div', { className: 'box' });

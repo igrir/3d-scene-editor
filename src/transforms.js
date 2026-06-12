@@ -73,7 +73,7 @@ export function gizmoDragUpdate(mp, snap) {
       for (const om of selected) c.add(om.position);
       c.divideScalar(selected.size);
       g.position.copy(c);
-      g.quaternion.copy(state.targetObject.quaternion);
+      g.quaternion.identity();
     } else {
       const prevPos = state.targetObject.position.clone();
       g.dragUpdate(mp);
@@ -100,7 +100,7 @@ export function gizmoDragUpdate(mp, snap) {
       else if(act2==='scale'||act2==='uniscale'){for(const a of['x','y','z'])to.scale[a]=Math.max(0.1,Math.round(to.scale[a]/sp)*sp);}
     }
     const g = getActiveGizmo();
-    if (g.visible && state.targetObject) g.quaternion.copy(state.targetObject.quaternion);
+    if (g.visible && state.targetObject) g.quaternion.identity();
   }
 }
 

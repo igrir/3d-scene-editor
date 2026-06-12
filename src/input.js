@@ -5,7 +5,8 @@ import { gizmoStartDrag, gizmoDragUpdate, gizmoEndDrag, gizmoSetHover } from './
 import { refreshSelection } from './selection.js';
 import { refreshPanel, selectColorFinal } from './panels.js';
 import { updateGhost, placeGhost, cancelDropMode } from './drop-mode.js';
-import { history, actDelete, actColor } from './history.js';
+import { history, actDelete, actColor, actCreate } from './history.js';
+import { createObj, dupSel } from './objects.js';
 
 export function setupInput() {
   const dom = sceneRefs.renderer.domElement;
@@ -218,6 +219,109 @@ export function setupInput() {
   // ── keyboard ──
   document.addEventListener('keydown', e => {
     const mod = e.metaKey || e.ctrlKey;
+
+    // Duplicate (⌘D / Ctrl+D)
+    if (mod && e.key === 'd') {
+      e.preventDefault();
+      if (!selected.size) return;
+      const el = document.activeElement;
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return;
+      dupSel();
+      return;
+    }
+
+    // Copy (⌘C / Ctrl+C)
+    if (mod && e.key === 'c') {
+      if (!selected.size) return;
+      const el = document.activeElement;
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) return;
+      e.preventDefault();
+      state.clipboard = [];
+      for (const m of selected) {
+        if (m.isGroup) {
+          const data = { isGroup: true, children: [], position: m.position.clone(), quaternion: m.quaternion.clone(), scale: m.scale.clone() };
+          m.children.forEach(ch => {
+            if (!ch.isMesh) return;
+            data.children.push({
+              type: ch.userData.type,
+              position: ch.position.clone(),
+              quaternion: ch.quaternion.clone(),
+              scale: ch.scale.clone(),
+              color: ch.material.color.getHex(),
+              imageSrc: ch.userData.imageSrc || null,
+              isDropTarget: ch.userData.isDropTarget,
+            });
+          });
+          state.clipboard.push(data);
+        } else {
+          state.clipboard.push({
+            isGroup: false,
+            type: m.userData.type,
+            position: m.position.clone(),
+            quaternion: m.quaternion.clone(),
+            scale: m.scale.clone(),
+            color: m.material.color.getHex(),
+            imageSrc: m.userData.imageSrc || null,
+            isDropTarget: m.userData.isDropTarget,
+          });
+        }
+      }
+      return;
+    }
+
+    // Paste (⌘V / Ctrl+V)
+    if (mod && e.key === 'v') {
+      e.preventDefault();
+      if (!state.clipboard || !state.clipboard.length) return;
+      const el = document.activeElement;
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return;
+      const clones = [];
+      for (const data of state.clipboard) {
+        let c;
+        if (data.isGroup) {
+          c = new THREE.Group();
+          c.position.copy(data.position);
+          c.quaternion.copy(data.quaternion);
+          c.scale.copy(data.scale);
+          c.userData.isGroup = true;
+          for (const chData of data.children) {
+            const cm = createObj(chData.type, chData.imageSrc || undefined);
+            cm.position.copy(chData.position);
+            cm.quaternion.copy(chData.quaternion);
+            cm.scale.copy(chData.scale);
+            cm.material.color.setHex(chData.color);
+            cm.castShadow = true;
+            cm.receiveShadow = chData.isDropTarget;
+            cm.userData.type = chData.type;
+            cm.userData.isDropTarget = chData.isDropTarget;
+            if (chData.imageSrc) cm.userData.imageSrc = chData.imageSrc;
+            c.add(cm);
+          }
+        } else {
+          c = createObj(data.type, data.imageSrc || undefined);
+          c.position.copy(data.position);
+          c.quaternion.copy(data.quaternion);
+          c.scale.copy(data.scale);
+          c.material.color.setHex(data.color);
+          c.castShadow = true;
+          c.receiveShadow = data.isDropTarget;
+          c.userData.type = data.type;
+          c.userData.isDropTarget = data.isDropTarget;
+          if (data.imageSrc) c.userData.imageSrc = data.imageSrc;
+        }
+        // Offset paste slightly
+        c.position.x += 0.8;
+        c.position.z += 0.8;
+        sceneRefs.scene.add(c);
+        objects.push(c);
+        dropTargets.push(c);
+        clones.push(c);
+      }
+      selected.clear();
+      clones.forEach(c => selected.add(c));
+      refreshSelection();
+      return;
+    }
 
     // Undo / Redo
     if (mod && e.key === 'z' && !e.shiftKey) { e.preventDefault(); history.undo(); return; }
