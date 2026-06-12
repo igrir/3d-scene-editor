@@ -313,6 +313,7 @@ export function createUI() {
   io.appendChild(createEl('button', { id: 'btn-import', title: 'Import', text: '\u{1F4E5}' }));
   const samplesBtn = createEl('button', { id: 'btn-samples', title: 'Open Sample', text: '\u{1F3D8}\uFE0F' });
   io.appendChild(samplesBtn);
+  io.appendChild(createEl('button', { id: 'btn-share', title: 'Share scene via link', text: '\u{1F517}' }));
   // Samples popup
   const samplesPopup = createEl('div', { id: 'samples-popup' });
   samplesPopup.style.display = 'none';
