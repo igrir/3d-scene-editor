@@ -343,10 +343,9 @@ export function create(container, options = {}) {
 
 // Auto-init for direct script tag usage
 if (typeof window !== 'undefined') {
-  window.PrimitiveBuilder = {
-    create,
-    Editor: PrimitiveEditor,
-  };
+  const pb = { create, Editor: PrimitiveEditor };
+  Object.defineProperty(pb, 'sceneRefs', { get: () => sceneRefs });
+  window.PrimitiveBuilder = pb;
 
   // Auto-load if there's a [data-primitive-editor] element
   document.addEventListener('DOMContentLoaded', () => {
