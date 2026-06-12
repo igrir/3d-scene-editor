@@ -200,6 +200,10 @@ export class PrimitiveEditor {
     this._wireButton('btn-group', groupSelected);
     this._wireButton('btn-ungroup', ungroupSelected);
 
+    // Undo/Redo — stopPropagation keeps panel-bar collapse toggle from firing
+    this._wireButton('btn-undo', (e) => { e.stopPropagation(); history.undo(); });
+    this._wireButton('btn-redo', (e) => { e.stopPropagation(); history.redo(); });
+
     // Share button
     this._wireShareButton();
 
