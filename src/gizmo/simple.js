@@ -209,10 +209,16 @@ export class SimpleGizmo extends THREE.Group {
       const camDist = state.targetObject.position.distanceTo(sceneRefs.camera.position);
       const screenDy = (mp.y - mouse.y) * camDist * 1.2;
       state.targetObject.position.y = startPos.y + screenDy;
-      const y = state.targetObject.position.y;
-      this.groundRing.position.set(0, -y + 0.02, 0); this.groundDot.position.set(0, -y + 0.02, 0);
-      const pos = this.dashLine.geometry.attributes.position.array; pos[1] = 0; pos[4] = -y;
-      this.dashLine.geometry.attributes.position.needsUpdate = true; this.dashLine.computeLineDistances();
+      // Move gizmo with object so ground marker stays at ground
+      this.position.y = state.targetObject.position.y;
+      const curY = state.targetObject.position.y;
+      this.groundRing.position.set(0, -curY + 0.02, 0);
+      this.groundDot.position.set(0, -curY + 0.02, 0);
+      // Dash line from object down to ground
+      const pos = this.dashLine.geometry.attributes.position.array;
+      pos[1] = 0; pos[4] = -curY;
+      this.dashLine.geometry.attributes.position.needsUpdate = true;
+      this.dashLine.computeLineDistances();
     } else if (action === 'rotateY') {
       const yAxis = new THREE.Vector3(0, 1, 0);
       const apl = new THREE.Plane().setFromNormalAndCoplanarPoint(yAxis, state.targetObject.position);
