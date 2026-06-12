@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>3D Primitive Gallery</title>
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#1a1a2e;font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Helvetica Neue','Helvetica','Arial','Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;color:#fff;overflow-x:hidden}
+  .gallery-header{padding:32px 20px 8px;text-align:center}
+  .gallery-header h1{font-size:22px;font-weight:700;letter-spacing:-.3px;background:linear-gradient(135deg,#e94560,#0f3460);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+  .gallery-header p{font-size:13px;opacity:.5;font-weight:500}
+  .gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;padding:20px;max-width:1100px;margin:0 auto}
+  .scene-card{background:rgba(255,255,255,.06);border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.08);transition:transform .2s,box-shadow .2s}
+  .scene-card:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(0,0,0,.3)}
+  .scene-card .scene-title{padding:14px 16px 8px;font-size:14px;font-weight:600;letter-spacing:.3px;display:flex;align-items:center;gap:8px}
+  .scene-card .scene-title .emoji{font-size:20px}
+  .scene-frame{width:100%;aspect-ratio:16/10;border:none;display:block;background:#0a0a1a}
+  .scene-card .scene-link{display:block;padding:8px 16px 14px;font-size:11px;opacity:.4;text-decoration:none;color:#88aaff;transition:opacity .15s}
+  .scene-card .scene-link:hover{opacity:.8}
+  .footer{text-align:center;padding:20px;font-size:12px;opacity:.3}
+</style>
+</head>
+<body>
+  <div class="gallery-header">
+    <h1>🏠 3D Primitive Gallery</h1>
+    <p>Built with primitives — box, sphere, cylinder, cone, torus</p>
+  </div>
+  <div class="gallery-grid">
+    <div class="scene-card">
+      <div class="scene-title"><span class="emoji">🪑</span> Chair</div>
+      <iframe class="scene-frame" src="/index.html?view=chair" loading="lazy"></iframe>
+      <a class="scene-link" href="/index.html?view=chair" target="_blank">Open fullscreen ↗</a>
+    </div>
+    <div class="scene-card">
+      <div class="scene-title"><span class="emoji">⚽</span> Ball</div>
+      <iframe class="scene-frame" src="/index.html?view=ball" loading="lazy"></iframe>
+      <a class="scene-link" href="/index.html?view=ball" target="_blank">Open fullscreen ↗</a>
+    </div>
+    <div class="scene-card">
+      <div class="scene-title"><span class="emoji">🌲</span> Tree</div>
+      <iframe class="scene-frame" src="/index.html?view=tree" loading="lazy"></iframe>
+      <a class="scene-link" href="/index.html?view=tree" target="_blank">Open fullscreen ↗</a>
+    </div>
+  </div>
+  <div class="footer">
+    <a href="/index.html" style="color:#88aaff;text-decoration:none">Open Editor ↗</a>
+  </div>
+</body>
+</html>

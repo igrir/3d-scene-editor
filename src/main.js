@@ -13,6 +13,7 @@ import { history, actCreate } from './history.js';
 import { cancelDropMode, startDropMode, placeGhost } from './drop-mode.js';
 import { delSel, dupSel } from './objects.js';
 import { groupSelected, ungroupSelected, initPrefabUI } from './prefabs.js';
+import { SCENES, getSceneNames } from './view-mode.js';
 
 // ═══════════════════════════════════
 // INITIALIZATION
@@ -215,29 +216,95 @@ document.querySelectorAll('#si-editor input').forEach(inp => {
 });
 
 // ═══════════════════════════════════
-// DEFAULT OBJECTS
+// VIEW MODE SETUP
 // ═══════════════════════════════════
 
-(function initDefaultObjects() {
-  const defaults = [
-    ['box', [-1.5, 0.5, 0], '#e94560'],
-    ['sphere', [1.5, 0.6, 0], '#0f3460'],
-    ['cylinder', [0, 0.5, -1.8], '#16a34a'],
-    ['cone', [0, 0.5, 1.8], '#f59e0b'],
-    ['torus', [-1.8, 0.5, -1.5], '#8b5cf6'],
-  ];
-  for (const [t, pos, c] of defaults) {
-    state.nextColor = c;
-    const m = createObj(t);
-    m.position.set(pos[0], pos[1], pos[2]);
+const params = new URLSearchParams(location.search);
+const viewScene = params.get('view');
+
+if (viewScene && SCENES[viewScene]) {
+  // ── Viewer: load scene in view-only mode ──
+  const sceneData = SCENES[viewScene];
+  for (const s of sceneData) {
+    state.nextColor = s.color;
+    const m = createObj(s.type);
+    m.position.set(s.pos[0], s.pos[1], s.pos[2]);
+    if (s.rot) m.rotation.set(s.rot[0], s.rot[1], s.rot[2]);
+    if (s.scale) m.scale.set(s.scale[0], s.scale[1], s.scale[2]);
+    m.material.color.set(s.color);
     sceneRefs.scene.add(m);
     objects.push(m);
     dropTargets.push(m);
   }
-  state.nextColor = DEFAULT_COLOR;
-  document.getElementById('cp').value = DEFAULT_COLOR;
-  document.getElementById('ch').textContent = DEFAULT_COLOR;
-})();
+  // Camera position
+  sceneRefs.camera.position.set(3, 2.5, 3.5);
+  sceneRefs.orbit.target.set(0, 1, 0);
+  sceneRefs.orbit.update();
+
+  // Add view-mode label
+  const label = document.createElement('div');
+  label.id = 'scene-label';
+  label.textContent = viewScene.charAt(0).toUpperCase() + viewScene.slice(1);
+  document.body.appendChild(label);
+
+  // Enter view mode
+  document.body.classList.add('view-mode');
+
+  // View toggle button
+  const btn = document.createElement('button');
+  btn.id = 'view-toggle';
+  btn.innerHTML = '\u25B6'; // ▶ play
+  btn.title = 'Switch to Edit Mode';
+  btn.addEventListener('click', () => {
+    const isView = document.body.classList.toggle('view-mode');
+    btn.innerHTML = isView ? '\u25B6' : '\u270F'; // ▶ or ✏
+    btn.title = isView ? 'Switch to Edit Mode' : 'Switch to View Mode';
+    if (!isView) {
+      label.style.opacity = '0';
+    } else {
+      label.style.opacity = '1';
+    }
+  });
+  document.body.appendChild(btn);
+
+} else {
+  // ── Normal editor mode ──
+  // Add view toggle button (hidden by default on editor)
+  const btn = document.createElement('button');
+  btn.id = 'view-toggle';
+  btn.innerHTML = '\u25B6'; // ▶
+  btn.title = 'View Mode';
+  btn.style.opacity = '0.5';
+  btn.addEventListener('click', () => {
+    document.body.classList.toggle('view-mode');
+    const isView = document.body.classList.contains('view-mode');
+    btn.innerHTML = isView ? '\u270F' : '\u25B6'; // ✏ or ▶
+    btn.title = isView ? 'Switch to Edit Mode' : 'Switch to View Mode';
+  });
+  document.body.appendChild(btn);
+
+  // Default objects
+  (function initDefaultObjects() {
+    const defaults = [
+      ['box', [-1.5, 0.5, 0], '#e94560'],
+      ['sphere', [1.5, 0.6, 0], '#0f3460'],
+      ['cylinder', [0, 0.5, -1.8], '#16a34a'],
+      ['cone', [0, 0.5, 1.8], '#f59e0b'],
+      ['torus', [-1.8, 0.5, -1.5], '#8b5cf6'],
+    ];
+    for (const [t, pos, c] of defaults) {
+      state.nextColor = c;
+      const m = createObj(t);
+      m.position.set(pos[0], pos[1], pos[2]);
+      sceneRefs.scene.add(m);
+      objects.push(m);
+      dropTargets.push(m);
+    }
+    state.nextColor = DEFAULT_COLOR;
+    document.getElementById('cp').value = DEFAULT_COLOR;
+    document.getElementById('ch').textContent = DEFAULT_COLOR;
+  })();
+}
 
 
 // ═══════════════════════════════════
