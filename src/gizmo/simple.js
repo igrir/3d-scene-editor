@@ -261,8 +261,12 @@ export class SimpleGizmo extends THREE.Group {
         const localUp = new THREE.Vector3(0, 1, 0).applyQuaternion(this.quaternion);
         const dy = scaleDelta.dot(localUp);
         const factor = 1 + dy * 1.5;
-        const s = Math.max(0.1, startScale.x * factor);
-        state.targetObject.scale.set(s, s, s);
+        const magnitude = Math.max(0.1, Math.abs(startScale.x) * factor);
+        state.targetObject.scale.set(
+          Math.sign(startScale.x) * magnitude,
+          Math.sign(startScale.y) * magnitude,
+          Math.sign(startScale.z) * magnitude
+        );
       }
     }
     this.position.copy(state.targetObject.position);

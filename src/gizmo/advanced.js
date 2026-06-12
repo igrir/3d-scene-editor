@@ -245,11 +245,12 @@ export class AdvancedGizmo extends THREE.Group {
       const localUp = new THREE.Vector3(0, 1, 0).applyQuaternion(this.quaternion);
       const dy = d.dot(localUp);
       const factor = 1 + dy * 1.5;
-      // Uniform scale relative to each axis' current value
+      // Uniform scale — preserve each axis' sign (flip) while scaling magnitude uniformly
+      const magnitude = Math.max(0.1, Math.abs(startScale.x) * factor);
       state.targetObject.scale.set(
-        Math.max(0.1, startScale.x * factor),
-        Math.max(0.1, startScale.y * factor),
-        Math.max(0.1, startScale.z * factor)
+        Math.sign(startScale.x) * magnitude,
+        Math.sign(startScale.y) * magnitude,
+        Math.sign(startScale.z) * magnitude
       );
     }
     this.position.copy(state.targetObject.position);
