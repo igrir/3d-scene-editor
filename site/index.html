@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3D Primitive Builder</title>
+<title>3D Primitive Builder — Free 3D Scene Editor & Embeddable Viewer</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     background: #0a0a12;
-    color: #e0e0e8;
+    color: #d0d0da;
     font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     min-height: 100vh;
   }
@@ -16,15 +16,18 @@
     text-align: center;
     padding: 40px 24px 0;
   }
-  .hero h1 { font-size: 38px; font-weight: 700; letter-spacing: -1px; }
-  .hero h1 span { color: #e94560; }
-  .hero p { font-size: 15px; opacity: .5; margin-top: 6px; }
+  .hero h1 { font-size: 38px; font-weight: 700; letter-spacing: -1px; line-height: 1.2; }
+  .hero h1 span { background: linear-gradient(135deg,#e94560,#ff6b6b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero .tagline { font-size: 16px; color: #888; margin-top: 8px; max-width: 520px; margin-left: auto; margin-right: auto; line-height: 1.5; }
+  .hero .tagline strong { color: #bbb; }
+  .hero .badges { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+  .hero .badges span { font-size: 12px; padding: 4px 12px; border-radius: 20px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06); color: #999; }
   .cta {
     display: flex;
     gap: 8px;
     justify-content: center;
     flex-wrap: wrap;
-    margin: 24px auto 0;
+    margin: 20px auto 0;
   }
   .cta a {
     padding: 10px 22px;
@@ -36,20 +39,43 @@
     white-space: nowrap;
   }
   .cta .primary { background: #e94560; color: #fff; }
-  .cta .primary:hover { background: #d63851; }
+  .cta .primary:hover { background: #d63851; transform: translateY(-1px); }
   .cta .secondary { border: 1px solid rgba(255,255,255,.12); color: #bbb; }
   .cta .secondary:hover { border-color: #e94560; color: #fff; background: rgba(233,69,96,.08); }
   .editor-wrap {
     max-width: 960px;
-    margin: 28px auto;
+    margin: 24px auto;
     border-radius: 14px;
     overflow: hidden;
     border: 1px solid rgba(255,255,255,.06);
     box-shadow: 0 4px 32px rgba(0,0,0,.5);
   }
+  .selling {
+    max-width: 960px;
+    margin: 0 auto 36px;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .selling .card {
+    background: rgba(255,255,255,.02);
+    border: 1px solid rgba(255,255,255,.05);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: .15s;
+  }
+  .selling .card:hover { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.1); }
+  .selling .card .icon { font-size: 26px; margin-bottom: 6px; }
+  .selling .card h3 { font-size: 14px; font-weight: 600; color: #eee; margin-bottom: 4px; }
+  .selling .card p { font-size: 12px; color: #888; line-height: 1.5; }
+  .footer { text-align: center; padding: 20px 24px 32px; font-size: 13px; opacity: .3; }
+  .footer a { color: #e94560; text-decoration: none; }
   @media (max-width: 600px) {
     .hero h1 { font-size: 26px; }
     .cta a { font-size: 13px; padding: 8px 16px; }
+    .selling { grid-template-columns: 1fr 1fr; }
   }
 </style>
 </head>
@@ -57,9 +83,18 @@
 
 <div class="hero">
   <h1>🏠 <span>3D</span> Primitive Builder</h1>
-  <p>Browser-based 3D scene editor &amp; gallery — made with Three.js</p>
+  <p class="tagline">
+    <strong>Create 3D scenes</strong> in your browser — no install, no account, no cost.<br>
+    Build with primitives, arrange with gizmos, and <strong>embed anywhere</strong>.
+  </p>
+  <div class="badges">
+    <span>⚡ Zero setup</span>
+    <span>🆓 Free &amp; open source</span>
+    <span>📦 84 kB gzip</span>
+    <span>🌐 Works everywhere</span>
+  </div>
   <div class="cta">
-    <a class="primary" href="editor/">🎮 Open Editor</a>
+    <a class="primary" href="editor/">🎮 Try the Editor</a>
     <a class="secondary" href="https://github.com/igrir/3d-primitive-builder">📦 GitHub</a>
     <a class="secondary" href="embedding/">📖 Embed Docs</a>
     <a class="secondary" href="viewer.html">🏠 Gallery</a>
@@ -69,9 +104,32 @@
 
 <div class="editor-wrap" id="live-editor"></div>
 
-<div class="footer" style="text-align:center;padding:20px 24px 32px;font-size:13px;opacity:.3">
+<div class="selling">
+  <div class="card">
+    <div class="icon">🎨</div>
+    <h3>Inspirasi Tanpa Batas</h3>
+    <p>15 primitif — box, sphere, cone, torus, dan masih banyak lagi. Gabung, ubah warna, scale, putar — semua real-time.</p>
+  </div>
+  <div class="card">
+    <div class="icon">🧩</div>
+    <h3>Pasang di Situs Kamu</h3>
+    <p>Satu baris script + satu div. Embed editor 3D interaktif di website, blog, atau portfolio kamu. Gratis.</p>
+  </div>
+  <div class="card">
+    <div class="icon">🚀</div>
+    <h3>Cepat &amp; Ringan</h3>
+    <p>84 kB compressed. Zero dependency runtime. Three.js baked in. Muat dalam sekejap di perangkat apapun.</p>
+  </div>
+  <div class="card">
+    <div class="icon">🔓</div>
+    <h3>Open Source</h3>
+    <p>Kode terbuka di GitHub. MIT license. Fork, modifikasi, pakai — tanpa bayar. Kamu yang pegang kendali.</p>
+  </div>
+</div>
+
+<div class="footer">
   Built with ❤️ using Three.js &middot;
-  <a href="https://github.com/igrir/3d-primitive-builder" style="color:#e94560;text-decoration:none">igrir/3d-primitive-builder</a>
+  <a href="https://github.com/igrir/3d-primitive-builder">igrir/3d-primitive-builder</a>
 </div>
 
 <script src="dist/3d-primitive-builder.umd.js"></script>
