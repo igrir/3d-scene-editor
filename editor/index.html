@@ -50,7 +50,8 @@
       setTimeout(() => {
         const sr = PrimitiveBuilder.sceneRefs;
         if (sr) {
-          // Clear selection and hide gizmo for pure viewer
+          // Pure viewer: no selection, no gizmo, lightweight rendering
+          sr.viewerMode = true;
           sr.selected && sr.selected.clear();
           const gizmo = sr.advGizmo || sr.simGizmo;
           if (gizmo) gizmo.visible = false;

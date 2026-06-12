@@ -240,12 +240,13 @@ if (viewScene && SCENES[viewScene]) {
   sceneRefs.camera.position.set(3, 2.5, 3.5);
   sceneRefs.orbit.target.set(0, 1, 0);
   sceneRefs.orbit.update();
-  // Pure viewer — no UI, no interaction, no gizmo
+  // Pure viewer — no UI, no interaction, no gizmo, lightweight render
   document.body.classList.add('view-mode');
   document.body.classList.add('view-mode-pure');
   selected.clear();
   detachGizmo();
   refreshSelection();
+  sceneRefs.viewerMode = true;
 
 } else {
   // ── Normal editor mode with view toggle ──
@@ -309,7 +310,11 @@ function loop() {
   }
   
   sceneRefs.orbit.update();
-  sceneRefs.composer.render();
+  if (sceneRefs.viewerMode) {
+    sceneRefs.renderer.render(sceneRefs.scene, sceneRefs.camera);
+  } else {
+    sceneRefs.composer.render();
+  }
 }
 loop();
 

@@ -255,7 +255,11 @@ export class PrimitiveEditor {
         sceneRefs.outlinePass.overlayMaterial.uniforms.dashTime.value = performance.now() / 1000;
       }
       sceneRefs.orbit.update();
-      sceneRefs.composer.render();
+      if (sceneRefs.viewerMode) {
+        sceneRefs.renderer.render(sceneRefs.scene, sceneRefs.camera);
+      } else {
+        sceneRefs.composer.render();
+      }
     };
     loop();
   }
