@@ -128,6 +128,7 @@ export function createObj(t, imgSrc) {
     m.castShadow = true;
     m.receiveShadow = true;
     m.userData.type = t;
+    m.userData.name = t;
     m.userData.isDropTarget = true;
     return m;
   }
@@ -169,6 +170,7 @@ export function createObj(t, imgSrc) {
     m.receiveShadow = true;
   }
   m.userData.type = t;
+  m.userData.name = t;
   m.userData.isDropTarget = true;
   if (imgSrc) m.userData.imageSrc = imgSrc;
   return m;
@@ -185,6 +187,7 @@ export function delSel() {
 function cloneGroup(g) {
   const cg = new THREE.Group();
   cg.userData.type = g.userData.type;
+  cg.userData.name = g.userData.name || g.userData.type;
   cg.userData.isDropTarget = true;
   cg.position.copy(g.position);
   cg.quaternion.copy(g.quaternion);
@@ -221,6 +224,7 @@ export function dupSel() {
       c.castShadow = true;
       c.receiveShadow = m.receiveShadow;
       c.userData.type = m.userData.type;
+      c.userData.name = m.userData.name || m.userData.type;
       c.userData.isDropTarget = true;
       c.userData.imageSrc = m.userData.imageSrc;
     }

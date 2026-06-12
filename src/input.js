@@ -7,6 +7,7 @@ import { refreshPanel, selectColorFinal } from './panels.js';
 import { updateGhost, placeGhost, cancelDropMode } from './drop-mode.js';
 import { history, actDelete, actColor, actCreate } from './history.js';
 import { createObj, dupSel } from './objects.js';
+import { groupSelected, ungroupSelected } from './prefabs.js';
 
 export function setupInput() {
   const dom = sceneRefs.renderer.domElement;
@@ -66,6 +67,7 @@ export function setupInput() {
       sceneRefs.raycaster.setFromCamera(p, sceneRefs.camera);
       const gh = gizmoHitTest(sceneRefs.raycaster);
       if (gh) {
+        sceneRefs.orbit.enabled = false;
         gizmoStartDrag(gh, p);
         state.gizmoDragging = true;
         return;
@@ -217,7 +219,7 @@ export function setupInput() {
   });
 
   // ── keyboard ──
-  document.addEventListener('keydown', e => {
+  const handleKeyDown = e => {
     const mod = e.metaKey || e.ctrlKey;
 
     // Duplicate (⌘D / Ctrl+D)
@@ -244,6 +246,7 @@ export function setupInput() {
             if (!ch.isMesh) return;
             data.children.push({
               type: ch.userData.type,
+              name: ch.userData.name || ch.userData.type,
               position: ch.position.clone(),
               quaternion: ch.quaternion.clone(),
               scale: ch.scale.clone(),
@@ -257,6 +260,7 @@ export function setupInput() {
           state.clipboard.push({
             isGroup: false,
             type: m.userData.type,
+            name: m.userData.name || m.userData.type,
             position: m.position.clone(),
             quaternion: m.quaternion.clone(),
             scale: m.scale.clone(),
@@ -293,6 +297,7 @@ export function setupInput() {
             cm.castShadow = true;
             cm.receiveShadow = chData.isDropTarget;
             cm.userData.type = chData.type;
+            cm.userData.name = chData.name || chData.type;
             cm.userData.isDropTarget = chData.isDropTarget;
             if (chData.imageSrc) cm.userData.imageSrc = chData.imageSrc;
             c.add(cm);
@@ -306,6 +311,7 @@ export function setupInput() {
           c.castShadow = true;
           c.receiveShadow = data.isDropTarget;
           c.userData.type = data.type;
+          c.userData.name = data.name || data.type;
           c.userData.isDropTarget = data.isDropTarget;
           if (data.imageSrc) c.userData.imageSrc = data.imageSrc;
         }
@@ -320,6 +326,36 @@ export function setupInput() {
       selected.clear();
       clones.forEach(c => selected.add(c));
       refreshSelection();
+      return;
+    }
+
+    // Select all (⌘A / Ctrl+A) — skip if editing text
+    if (mod && e.key === 'a') {
+      const el = document.activeElement;
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return;
+      e.preventDefault();
+      selected.clear();
+      for (const m of objects) selected.add(m);
+      refreshSelection();
+      return;
+    }
+
+    // Group (⌘G / Ctrl+G)
+    if (mod && e.code === 'KeyG' && !e.shiftKey && selected.size >= 2) {
+      const el = document.activeElement;
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return;
+      e.preventDefault();
+      groupSelected();
+      return;
+    }
+
+    // Ungroup (⌘⇧G / Ctrl+Shift+G) — pakai e.code biar gak masalah sama huruf besar/kecil
+    if (mod && e.shiftKey && e.code === 'KeyG') {
+      e.preventDefault();
+      e.stopPropagation();
+      const el = document.activeElement;
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return;
+      if (selected.size) ungroupSelected();
       return;
     }
 
@@ -356,7 +392,18 @@ export function setupInput() {
       getActiveGizmo().detach();
       refreshSelection();
     }
-  });
+  };
+  document.addEventListener('keydown', handleKeyDown);
+  // Capture phase: intercept Ctrl+Shift+G before Brave/Chrome processes it
+  window.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.code === 'KeyG') {
+      e.preventDefault();
+      e.stopPropagation();
+      const el = document.activeElement;
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return;
+      if (selected.size) ungroupSelected();
+    }
+  }, { capture: true });
 
   // ── window resize ──
   window.addEventListener('resize', () => {

@@ -104,20 +104,24 @@ export class SimpleGizmo extends THREE.Group {
   startDrag(p, mp) {
     if (!state.targetObject) return;
     const act = p.userData.action;
+    const objPos = state.targetObject.position.clone();
+    const gizmoUp = new THREE.Vector3(0, 1, 0).applyQuaternion(this.quaternion);
+
+    // Compute start anchor: where the mouse hits the horizontal plane at object Y
+    const rc = new THREE.Raycaster();
+    rc.setFromCamera(mp, sceneRefs.camera);
+    const hPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(gizmoUp, objPos);
+    const startHit = new THREE.Vector3();
+    rc.ray.intersectPlane(hPlane, startHit);
+
     const drag = {
       part: p, action: act, mouse: mp.clone(),
-      startPos: state.targetObject.position.clone(),
+      startPos: objPos,
+      startHit: startHit || objPos.clone(),
       startRot: state.targetObject.quaternion.clone(),
       startScale: state.targetObject.scale.clone(),
     };
     if (act === 'xz' || act === 'y') {
-      const gizmoUp2 = new THREE.Vector3(0, 1, 0).applyQuaternion(this.quaternion);
-      const rc = new THREE.Raycaster();
-      const hPlane2 = new THREE.Plane().setFromNormalAndCoplanarPoint(gizmoUp2, state.targetObject.position);
-      rc.setFromCamera(mp, sceneRefs.camera);
-      const hp2 = new THREE.Vector3();
-      rc.ray.intersectPlane(hPlane2, hp2);
-      drag.startHit = hp2;
       this.dashLine.visible = true; this.groundRing.visible = true; this.groundDot.visible = true;
     }
     this.dragging = drag;
@@ -127,29 +131,33 @@ export class SimpleGizmo extends THREE.Group {
 
   dragUpdate(mp) {
     if (!this.dragging || !state.targetObject) return;
-    const { action, mouse, startPos, startRot, startScale } = this.dragging;
-    const cd = new THREE.Vector3();
-    sceneRefs.camera.getWorldDirection(cd);
-    const pl = new THREE.Plane().setFromNormalAndCoplanarPoint(cd, state.targetObject.position);
+    const { action, mouse, startPos, startHit, startRot, startScale } = this.dragging;
+    const gizmoUp = new THREE.Vector3(0, 1, 0).applyQuaternion(this.quaternion);
     const rc = new THREE.Raycaster();
-    const sp = new THREE.Vector3(); rc.setFromCamera(mouse, sceneRefs.camera); rc.ray.intersectPlane(pl, sp);
-    const cp = new THREE.Vector3(); rc.setFromCamera(mp, sceneRefs.camera); rc.ray.intersectPlane(pl, cp);
-    if (!sp || !cp) return;
-    const d = cp.clone().sub(sp);
+    const refPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(gizmoUp, state.targetObject.position);
+
+    // Current mouse position on the horizontal plane
+    const hp = new THREE.Vector3();
+    rc.setFromCamera(mp, sceneRefs.camera);
+    rc.ray.intersectPlane(refPlane, hp);
+    if (!hp) return;
+
+    // Delta from where we started dragging = delta from anchor startHit to current hp
+    const delta = hp.clone().sub(startHit);
 
     if (action === 'xz') {
       if (state.xzMode === 'surface') {
-        const hitPoint = new THREE.Vector3();
         rc.setFromCamera(mp, sceneRefs.camera);
         const targets = dropTargets.filter(t => !selected.has(t));
         const hits = rc.intersectObjects(targets, true);
         if (hits.length > 0) {
           const hit = hits[0];
           const normal = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
-          const offset = state.targetObject ? halfHeight(state.targetObject.userData.type) : 0.5;
-          hitPoint.copy(hit.point.clone().add(normal.clone().multiplyScalar(offset)));
-          state.targetObject.position.x = hitPoint.x;
-          state.targetObject.position.z = hitPoint.z;
+          const hOff = state.targetObject ? halfHeight(state.targetObject.userData.type) : 0.5;
+          const hitPoint = hit.point.clone().add(normal.clone().multiplyScalar(hOff));
+          // Apply the drag delta to get smooth offset-based movement
+          state.targetObject.position.x = startPos.x + delta.x;
+          state.targetObject.position.z = startPos.z + delta.z;
           state.targetObject.position.y = hitPoint.y;
           if (hit.object !== sceneRefs.shadowPlane) {
             if (Math.abs(normal.y) < 0.99) {
@@ -162,22 +170,19 @@ export class SimpleGizmo extends THREE.Group {
           }
         }
       } else {
-        const gizmoUp = new THREE.Vector3(0, 1, 0).applyQuaternion(this.quaternion);
-        const hPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(gizmoUp, state.targetObject.position);
-        const hp = new THREE.Vector3(); rc.setFromCamera(mp, sceneRefs.camera); rc.ray.intersectPlane(hPlane, hp);
-        if (hp && this.dragging.startHit) {
-          const dPos = hp.sub(this.dragging.startHit);
-          const gizmoX = new THREE.Vector3(1, 0, 0).applyQuaternion(this.quaternion);
-          const gizmoZ = new THREE.Vector3(0, 0, 1).applyQuaternion(this.quaternion);
-          state.targetObject.position.copy(startPos.clone().add(gizmoX.clone().multiplyScalar(dPos.dot(gizmoX))).add(gizmoZ.clone().multiplyScalar(dPos.dot(gizmoZ))));
-        }
+        // Constrain delta to gizmo X/Z axes
+        const gizmoX = new THREE.Vector3(1, 0, 0).applyQuaternion(this.quaternion);
+        const gizmoZ = new THREE.Vector3(0, 0, 1).applyQuaternion(this.quaternion);
+        const projX = delta.dot(gizmoX);
+        const projZ = delta.dot(gizmoZ);
+        state.targetObject.position.copy(startPos.clone().add(gizmoX.clone().multiplyScalar(projX)).add(gizmoZ.clone().multiplyScalar(projZ)));
       }
       const y = state.targetObject.position.y;
       this.groundRing.position.set(0, -y + 0.02, 0); this.groundDot.position.set(0, -y + 0.02, 0);
       const pos = this.dashLine.geometry.attributes.position.array; pos[1] = 0; pos[4] = -y;
       this.dashLine.geometry.attributes.position.needsUpdate = true; this.dashLine.computeLineDistances();
     } else if (action === 'y') {
-      state.targetObject.position.y = startPos.y + d.y;
+      state.targetObject.position.y = startPos.y + delta.y;
       const y = state.targetObject.position.y;
       this.groundRing.position.set(0, -y + 0.02, 0); this.groundDot.position.set(0, -y + 0.02, 0);
       const pos = this.dashLine.geometry.attributes.position.array; pos[1] = 0; pos[4] = -y;
@@ -196,11 +201,20 @@ export class SimpleGizmo extends THREE.Group {
         }
       }
     } else if (action === 'scale') {
-      const localUp = new THREE.Vector3(0, 1, 0).applyQuaternion(this.quaternion);
-      const dy = d.dot(localUp);
-      const factor = 1 + dy * 1.5;
-      const s = Math.max(0.1, startScale.x * factor);
-      state.targetObject.scale.set(s, s, s);
+      // Scale uses camera-facing plane delta for up/down motion
+      const cd = new THREE.Vector3();
+      sceneRefs.camera.getWorldDirection(cd);
+      const camPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(cd, state.targetObject.position);
+      const sp2 = new THREE.Vector3(); rc.setFromCamera(mouse, sceneRefs.camera); rc.ray.intersectPlane(camPlane, sp2);
+      const cp2 = new THREE.Vector3(); rc.setFromCamera(mp, sceneRefs.camera); rc.ray.intersectPlane(camPlane, cp2);
+      if (sp2 && cp2) {
+        const scaleDelta = cp2.clone().sub(sp2);
+        const localUp = new THREE.Vector3(0, 1, 0).applyQuaternion(this.quaternion);
+        const dy = scaleDelta.dot(localUp);
+        const factor = 1 + dy * 1.5;
+        const s = Math.max(0.1, startScale.x * factor);
+        state.targetObject.scale.set(s, s, s);
+      }
     }
     this.position.copy(state.targetObject.position);
   }

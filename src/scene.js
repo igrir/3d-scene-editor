@@ -51,7 +51,8 @@ export function initScene(container) {
   const fillLight = new THREE.DirectionalLight(0xaaaaff, 0.5);
   fillLight.position.set(-4, 3, -4);
   scene.add(fillLight);
-  scene.add(new THREE.HemisphereLight(0x7799ee, 0x887766, 0.5));
+  const hemiLight = new THREE.HemisphereLight(0x7799ee, 0x887766, 0.5);
+  scene.add(hemiLight);
 
   // SSAO
   const composer = new EffectComposer(renderer);
@@ -71,12 +72,17 @@ export function initScene(container) {
 
   // OutlinePass — after SSAO so it doesn't mess up depth/clearState for other passes
   const outlinePass = new OutlinePass(new THREE.Vector2(W, H), scene, camera, []);
-  outlinePass.visibleEdgeColor = new THREE.Color(0xffdd44);
+  outlinePass.visibleEdgeColor = new THREE.Color(0xffee00);
   outlinePass.hiddenEdgeColor = new THREE.Color(0x885500);
-  outlinePass.edgeStrength = 3;
-  outlinePass.edgeThickness = 1.5;
+  outlinePass.edgeStrength = 12;
+  outlinePass.edgeThickness = 2;
   outlinePass.edgeGlow = 0;
   outlinePass.downSampleRatio = 1;
+
+  // Replace overlay material with dashed-animated version
+  outlinePass.overlayMaterial = buildDashedOverlayMaterial();
+  outlinePass._dashTime = 0;
+
   composer.addPass(outlinePass);
 
   // Grid
@@ -100,7 +106,7 @@ export function initScene(container) {
   // Store all refs
   Object.assign(sceneRefs, {
     scene, camera, renderer, orbit, composer, ssaoPass, outlinePass, fxaaPass,
-    sun, ambient, shadowPlane, gridHelper, raycaster,
+    sun, ambient, fillLight, hemiLight, shadowPlane, gridHelper, raycaster,
   });
 
   // Resize function — standard resizeRendererToDisplaySize pattern
@@ -122,4 +128,68 @@ export function initScene(container) {
   };
 
   return sceneRefs;
+}
+
+/** Create a custom overlay material for OutlinePass that adds scrolling dashes */
+function buildDashedOverlayMaterial() {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      maskTexture: { value: null },
+      edgeTexture1: { value: null },
+      edgeTexture2: { value: null },
+      patternTexture: { value: null },
+      edgeStrength: { value: 1.0 },
+      edgeGlow: { value: 1.0 },
+      usePatternTexture: { value: 0.0 },
+      dashTime: { value: 0 },
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      varying vec2 vUv;
+
+      uniform sampler2D maskTexture;
+      uniform sampler2D edgeTexture1;
+      uniform sampler2D edgeTexture2;
+      uniform sampler2D patternTexture;
+      uniform float edgeStrength;
+      uniform float edgeGlow;
+      uniform bool usePatternTexture;
+      uniform float dashTime;
+
+      void main() {
+        vec4 edgeValue1 = texture2D(edgeTexture1, vUv);
+        vec4 edgeValue2 = texture2D(edgeTexture2, vUv);
+        vec4 maskColor = texture2D(maskTexture, vUv);
+        vec4 edgeValue = edgeValue1 + edgeValue2 * edgeGlow;
+        vec4 finalColor = edgeStrength * maskColor.r * edgeValue;
+
+        // Scrolling dashed pattern — small dashes, dense, no glow
+        float dashCoord = (vUv.x * 0.7 + vUv.y * 0.7) * 500.0 + dashTime * 8.0;
+        float pattern = 1.0 - step(mod(dashCoord, 2.0), 1.0);
+
+        float outlineIntensity = length(finalColor);
+        if (outlineIntensity > 0.01) {
+          finalColor *= pattern;
+        }
+
+        if (usePatternTexture) {
+          vec4 patternColor = texture2D(patternTexture, 6.0 * vUv);
+          float visibilityFactor = 1.0 - maskColor.g > 0.0 ? 1.0 : 0.5;
+          finalColor += visibilityFactor * (1.0 - maskColor.r) * (1.0 - patternColor.r);
+        }
+
+        gl_FragColor = finalColor;
+      }
+    `,
+    blending: THREE.AdditiveBlending,
+    depthTest: false,
+    depthWrite: false,
+    transparent: true,
+  });
 }

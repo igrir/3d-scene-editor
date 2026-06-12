@@ -159,12 +159,12 @@ document.querySelectorAll('#si-editor input').forEach(inp => {
       Math.max(0.01, parseFloat(document.getElementById('inp-sy').value) || 0.01),
       Math.max(0.01, parseFloat(document.getElementById('inp-sz').value) || 0.01)
     );
-    const newName = document.getElementById('inp-name').value.trim() || m.userData.type;
+    const newName = document.getElementById('inp-name').value.trim() || m.userData.name || m.userData.type;
     const oldPos = state.focusSnapshot.pos;
     const oldScl = state.focusSnapshot.scl;
     const oldName = state.focusSnapshot.name;
 
-    m.userData.type = newName;
+    m.userData.name = newName;
     m.position.copy(newPos);
     m.scale.copy(newScl);
 
@@ -184,7 +184,7 @@ document.querySelectorAll('#si-editor input').forEach(inp => {
 
     history.execute({
       do() {
-        m.userData.type = newName;
+        m.userData.name = newName;
         m.position.copy(newPos);
         m.scale.copy(newScl);
         const dp = newPos.clone().sub(oldPos);
@@ -196,7 +196,7 @@ document.querySelectorAll('#si-editor input').forEach(inp => {
         }
       },
       undo() {
-        m.userData.type = oldName;
+        m.userData.name = oldName;
         m.position.copy(oldPos);
         m.scale.copy(oldScl);
         const dp = oldPos.clone().sub(newPos);
@@ -239,6 +239,7 @@ document.querySelectorAll('#si-editor input').forEach(inp => {
   document.getElementById('ch').textContent = DEFAULT_COLOR;
 })();
 
+
 // ═══════════════════════════════════
 // ANIMATION LOOP
 // ═══════════════════════════════════
@@ -256,6 +257,12 @@ function loop() {
       g.position.copy(state.targetObject.position);
     }
   }
+  
+  // Animate dashed outline overlay
+  if (sceneRefs.outlinePass && sceneRefs.outlinePass.overlayMaterial && sceneRefs.outlinePass.overlayMaterial.uniforms) {
+    sceneRefs.outlinePass.overlayMaterial.uniforms.dashTime.value = performance.now() / 1000;
+  }
+  
   sceneRefs.orbit.update();
   sceneRefs.composer.render();
 }

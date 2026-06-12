@@ -45,22 +45,38 @@ export function captureThumbnail() {
   return dataUrl;
 }
 
-export function exportSceneData() {
-  return objects.map(m => {
+const VALID_TYPES = ['box','sphere','cylinder','cone','pyramid','torus','halfdonut','donut','quarterdonut','halfball','quarterball','bowl','isotriangle','righttriangle','plane','image'];
+
+function serializeMesh(m) {
+  try {
+    const isGrp = m.isGroup === true;
     const d = {
-      type: m.userData.type,
-      pos: m.position.toArray(),
-      rot: [m.quaternion.x, m.quaternion.y, m.quaternion.z, m.quaternion.w],
-      scl: m.scale.toArray(),
+      type: m.userData && m.userData.type || 'unknown',
+      pos: m.position ? m.position.toArray() : [0,0,0],
+      rot: m.quaternion ? [m.quaternion.x, m.quaternion.y, m.quaternion.z, m.quaternion.w] : [0,0,0,1],
+      scl: m.scale ? m.scale.toArray() : [1,1,1],
+      name: (m.userData && (m.userData.name || m.userData.type)) || 'unknown',
     };
-    if (m.userData.type === 'image' && m.userData.imageSrc) {
+    if (isGrp) {
+      // Group: serialize children with their LOCAL transforms
+      d.children = m.children.map(c => serializeMesh(c));
+    } else if (m.userData && m.userData.type === 'image' && m.userData.imageSrc) {
       d.color = '#ffffff';
       d.img = m.userData.imageSrc;
-    } else if (!m.isGroup) {
-      d.color = '#' + m.material.color.getHexString();
+    } else {
+      d.color = m && m.material && m.material.color
+        ? '#' + m.material.color.getHexString()
+        : '#ffffff';
     }
     return d;
-  });
+  } catch (e) {
+    console.error('serializeMesh error:', e, m);
+    return { type: 'error', error: e.message };
+  }
+}
+
+export function exportSceneData() {
+  return objects.map(m => serializeMesh(m));
 }
 
 export function saveCurrentScene(name) {
@@ -99,6 +115,8 @@ export function deleteSave(id) {
   return saves;
 }
 
+export { serializeMesh, deserializeEntry };
+
 export function clearWorld() {
   cancelDropMode();
   function disposeObj(o) {
@@ -123,6 +141,46 @@ export function clearWorld() {
   sceneRefs.orbit.update();
 }
 
+function deserializeEntry(entry) {
+  // Handle groups with children
+  if (entry.children && Array.isArray(entry.children)) {
+    const group = new THREE.Group();
+    group.userData.type = 'group';
+    group.userData.isDropTarget = false;
+    group.userData.name = entry.name || 'Group';
+    if (entry.pos) group.position.fromArray(entry.pos);
+    if (entry.rot) group.quaternion.set(entry.rot[0], entry.rot[1], entry.rot[2], entry.rot[3]);
+    if (entry.scl) group.scale.fromArray(entry.scl);
+    
+    for (const child of entry.children) {
+      const geomType = VALID_TYPES.includes(child.type) ? child.type : 'box';
+      const mesh = createObj(geomType, child.img || null);
+      mesh.userData.name = child.name || child.type;
+      if (child.pos) mesh.position.fromArray(child.pos);
+      if (child.rot) mesh.quaternion.set(child.rot[0], child.rot[1], child.rot[2], child.rot[3]);
+      if (child.scl) mesh.scale.fromArray(child.scl);
+      if (child.color && mesh.material) {
+        mesh.material.color.set(child.color);
+      }
+      if (child.img) mesh.userData.imageSrc = child.img;
+      group.add(mesh);
+    }
+    return group;
+  }
+  
+  // Regular object
+  const geomType = VALID_TYPES.includes(entry.type) ? entry.type : 'box';
+  const m = createObj(geomType, entry.img || null);
+  m.userData.name = entry.name || entry.type;
+  if (entry.pos) m.position.fromArray(entry.pos);
+  if (entry.rot) m.quaternion.set(entry.rot[0], entry.rot[1], entry.rot[2], entry.rot[3]);
+  if (entry.scl) m.scale.fromArray(entry.scl);
+  if (entry.color && geomType !== 'image' && !m.isGroup) {
+    m.material.color.set(entry.color);
+  }
+  return m;
+}
+
 export function loadFromData(data) {
   clearWorld();
   for (const entry of data) {
@@ -131,14 +189,8 @@ export function loadFromData(data) {
     if (entry.color && entry.type !== 'image') {
       state.nextColor = entry.color;
     }
-    const m = createObj(entry.type, entry.img || null);
+    const m = deserializeEntry(entry);
     state.nextColor = saved;
-    if (entry.pos) m.position.fromArray(entry.pos);
-    if (entry.rot) m.quaternion.set(entry.rot[0], entry.rot[1], entry.rot[2], entry.rot[3]);
-    if (entry.scl) m.scale.fromArray(entry.scl);
-    if (entry.color && entry.type !== 'image' && !m.isGroup) {
-      m.material.color.set(entry.color);
-    }
     history.execute(actCreate(m));
   }
   selected.clear();

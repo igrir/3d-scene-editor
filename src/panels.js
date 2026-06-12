@@ -243,7 +243,7 @@ export function hideModal() {
 // ── Info panel editor ──
 
 export function populateEditor(m) {
-  document.getElementById('inp-name').value = m.userData.type;
+  document.getElementById('inp-name').value = m.userData.name || m.userData.type;
   document.getElementById('inp-px').value = m.position.x.toFixed(2);
   document.getElementById('inp-py').value = m.position.y.toFixed(2);
   document.getElementById('inp-pz').value = m.position.z.toFixed(2);
@@ -618,6 +618,43 @@ export function createUI() {
   lv.style.width = '100%';
   lvGroup.appendChild(lv);
   lightBg.appendChild(lvGroup);
+
+  // Sun Intensity
+  const siGroup = createEl('div');
+  siGroup.style.cssText = 'flex:1;display:flex;flex-direction:column;gap:4px;margin-bottom:8px';
+  siGroup.appendChild(createLabel('Sun Intensity'));
+  const si = createEl('input', { type: 'range', id: 'sun-intensity', min: '0', max: '5', step: '0.1', value: '2.5' });
+  si.style.width = '100%';
+  siGroup.appendChild(si);
+  const siVal = createEl('span', { id: 'sun-intensity-val', text: '2.5' });
+  siVal.style.cssText = 'font-size:10px;font-family:monospace;color:#444;margin-top:2px;display:block;text-align:right';
+  siGroup.appendChild(siVal);
+  lightBg.appendChild(siGroup);
+
+  // Ambient Intensity
+  const aiGroup = createEl('div');
+  aiGroup.style.cssText = 'flex:1;display:flex;flex-direction:column;gap:4px;margin-bottom:8px';
+  aiGroup.appendChild(createLabel('Ambient Intensity'));
+  const ai = createEl('input', { type: 'range', id: 'ambient-intensity', min: '0', max: '2', step: '0.05', value: '0.6' });
+  ai.style.width = '100%';
+  aiGroup.appendChild(ai);
+  const aiVal = createEl('span', { id: 'ambient-intensity-val', text: '0.6' });
+  aiVal.style.cssText = 'font-size:10px;font-family:monospace;color:#444;margin-top:2px;display:block;text-align:right';
+  aiGroup.appendChild(aiVal);
+  lightBg.appendChild(aiGroup);
+
+  // Fill Intensity
+  const fiGroup = createEl('div');
+  fiGroup.style.cssText = 'flex:1;display:flex;flex-direction:column;gap:4px;margin-bottom:8px';
+  fiGroup.appendChild(createLabel('Fill Intensity'));
+  const fi = createEl('input', { type: 'range', id: 'fill-intensity', min: '0', max: '2', step: '0.05', value: '0.5' });
+  fi.style.width = '100%';
+  fiGroup.appendChild(fi);
+  const fiVal = createEl('span', { id: 'fill-intensity-val', text: '0.5' });
+  fiVal.style.cssText = 'font-size:10px;font-family:monospace;color:#444;margin-top:2px;display:block;text-align:right';
+  fiGroup.appendChild(fiVal);
+  lightBg.appendChild(fiGroup);
+
   worldTab.appendChild(lightBg);
 
   const sunCr = createEl('div', { className: 'cr' });
@@ -838,6 +875,21 @@ export function createUI() {
   document.getElementById('sun-color').addEventListener('input', e => {
     sceneRefs.sun.color.set(e.target.value);
   });
+  document.getElementById('sun-intensity').addEventListener('input', e => {
+    const v = parseFloat(e.target.value);
+    sceneRefs.sun.intensity = v;
+    document.getElementById('sun-intensity-val').textContent = v.toFixed(1);
+  });
+  document.getElementById('ambient-intensity').addEventListener('input', e => {
+    const v = parseFloat(e.target.value);
+    sceneRefs.ambient.intensity = v;
+    document.getElementById('ambient-intensity-val').textContent = v.toFixed(2);
+  });
+  document.getElementById('fill-intensity').addEventListener('input', e => {
+    const v = parseFloat(e.target.value);
+    sceneRefs.fillLight.intensity = v;
+    document.getElementById('fill-intensity-val').textContent = v.toFixed(2);
+  });
   document.getElementById('bg-color').addEventListener('input', e => {
     sceneRefs.scene.background = new THREE.Color(e.target.value);
   });
@@ -1014,7 +1066,7 @@ export function createUI() {
         state.focusSnapshot = {
           pos: state.editingObject.position.clone(),
           scl: state.editingObject.scale.clone(),
-          name: state.editingObject.userData.type,
+          name: state.editingObject.userData.name || state.editingObject.userData.type,
         };
       }
     });
@@ -1105,7 +1157,7 @@ function setupScrubber(inp) {
       state.focusSnapshot = {
         pos: state.editingObject.position.clone(),
         scl: state.editingObject.scale.clone(),
-        name: state.editingObject.userData.type,
+        name: state.editingObject.userData.name || state.editingObject.userData.type,
       };
     }
   });

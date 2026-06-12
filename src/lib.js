@@ -245,6 +245,10 @@ export class PrimitiveEditor {
           g.position.copy(state.targetObject.position);
         }
       }
+      // Animate dashed outline overlay
+      if (sceneRefs.outlinePass && sceneRefs.outlinePass.overlayMaterial && sceneRefs.outlinePass.overlayMaterial.uniforms) {
+        sceneRefs.outlinePass.overlayMaterial.uniforms.dashTime.value = performance.now() / 1000;
+      }
       sceneRefs.orbit.update();
       sceneRefs.composer.render();
     };

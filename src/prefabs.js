@@ -203,6 +203,7 @@ function ungroupInternal(group) {
 function serializeObj(mesh) {
   const d = {
     type: mesh.userData.type,
+    name: mesh.userData.name || mesh.userData.type,
     pos: mesh.position.toArray(),
     rot: [mesh.quaternion.x, mesh.quaternion.y, mesh.quaternion.z, mesh.quaternion.w],
     scl: mesh.scale.toArray(),
@@ -216,8 +217,10 @@ function serializeObj(mesh) {
 }
 
 function deserializeObj(d) {
-  const mesh = createObj(d.type);
+  const geomType = ['box','sphere','cylinder','cone','pyramid','torus','halfdonut','donut','quarterdonut','halfball','quarterball','bowl','isotriangle','righttriangle','plane','image'].includes(d.type) ? d.type : 'box';
+  const mesh = createObj(geomType);
   if (!mesh) return null;
+  mesh.userData.name = d.name || d.type;
   mesh.position.fromArray(d.pos);
   mesh.quaternion.fromArray(d.rot);
   mesh.scale.fromArray(d.scl);

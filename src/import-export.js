@@ -4,24 +4,11 @@ import { history, actCreate } from './history.js';
 import { refreshSelection } from './selection.js';
 import { detachGizmo } from './gizmo/index.js';
 import { showModal } from './panels.js';
+import { serializeMesh, deserializeEntry } from './saveload.js';
 
 export function setupImportExport() {
   document.getElementById('btn-export').addEventListener('click', () => {
-    const data = objects.map(m => {
-      const d = {
-        type: m.userData.type,
-        pos: m.position.toArray(),
-        rot: [m.quaternion.x, m.quaternion.y, m.quaternion.z, m.quaternion.w],
-        scl: m.scale.toArray(),
-      };
-      if (m.userData.type === 'image' && m.userData.imageSrc) {
-        d.color = '#ffffff';
-        d.img = m.userData.imageSrc;
-      } else if (!m.isGroup) {
-        d.color = '#' + m.material.color.getHexString();
-      }
-      return d;
-    });
+    const data = objects.map(m => serializeMesh(m));
     showModal(
       '\u{1F4E4} Export Scene',
       JSON.stringify(data, null, 2),
@@ -44,14 +31,8 @@ export function setupImportExport() {
           if (entry.color && entry.type !== 'image') {
             state.nextColor = entry.color;
           }
-          const m = createObj(entry.type, entry.img || null);
+          const m = deserializeEntry(entry);
           state.nextColor = saved;
-          if (entry.pos) m.position.fromArray(entry.pos);
-          if (entry.rot) m.quaternion.set(entry.rot[0], entry.rot[1], entry.rot[2], entry.rot[3]);
-          if (entry.scl) m.scale.fromArray(entry.scl);
-          if (entry.color && entry.type !== 'image' && !m.isGroup) {
-            m.material.color.set(entry.color);
-          }
           history.execute(actCreate(m));
         }
         selected.clear();
