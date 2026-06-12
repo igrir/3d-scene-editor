@@ -223,7 +223,7 @@ const params = new URLSearchParams(location.search);
 const viewScene = params.get('view');
 
 if (viewScene && SCENES[viewScene]) {
-  // ── Viewer: load scene in view-only mode ──
+  // ── Pure viewer: no UI at all, just the scene ──
   const sceneData = SCENES[viewScene];
   for (const s of sceneData) {
     state.nextColor = s.color;
@@ -240,46 +240,21 @@ if (viewScene && SCENES[viewScene]) {
   sceneRefs.camera.position.set(3, 2.5, 3.5);
   sceneRefs.orbit.target.set(0, 1, 0);
   sceneRefs.orbit.update();
-
-  // Add view-mode label
-  const label = document.createElement('div');
-  label.id = 'scene-label';
-  label.textContent = viewScene.charAt(0).toUpperCase() + viewScene.slice(1);
-  document.body.appendChild(label);
-
-  // Enter view mode
+  // Pure viewer — no buttons, no labels, no UI
   document.body.classList.add('view-mode');
-
-  // View toggle button
-  const btn = document.createElement('button');
-  btn.id = 'view-toggle';
-  btn.innerHTML = '\u25B6'; // ▶ play
-  btn.title = 'Switch to Edit Mode';
-  btn.addEventListener('click', () => {
-    const isView = document.body.classList.toggle('view-mode');
-    btn.innerHTML = isView ? '\u25B6' : '\u270F'; // ▶ or ✏
-    btn.title = isView ? 'Switch to Edit Mode' : 'Switch to View Mode';
-    if (!isView) {
-      label.style.opacity = '0';
-    } else {
-      label.style.opacity = '1';
-    }
-  });
-  document.body.appendChild(btn);
+  document.body.classList.add('view-mode-pure');
 
 } else {
-  // ── Normal editor mode ──
-  // Add view toggle button (hidden by default on editor)
+  // ── Normal editor mode with view toggle ──
   const btn = document.createElement('button');
   btn.id = 'view-toggle';
   btn.innerHTML = '\u25B6'; // ▶
   btn.title = 'View Mode';
-  btn.style.opacity = '0.5';
   btn.addEventListener('click', () => {
     document.body.classList.toggle('view-mode');
     const isView = document.body.classList.contains('view-mode');
-    btn.innerHTML = isView ? '\u270F' : '\u25B6'; // ✏ or ▶
-    btn.title = isView ? 'Switch to Edit Mode' : 'Switch to View Mode';
+    btn.innerHTML = isView ? '\u2716' : '\u25B6'; // ✕ or ▶
+    btn.title = isView ? 'Exit View Mode' : 'View Mode';
   });
   document.body.appendChild(btn);
 
