@@ -200,6 +200,9 @@ export class PrimitiveEditor {
     this._wireButton('btn-group', groupSelected);
     this._wireButton('btn-ungroup', ungroupSelected);
 
+    // Share button
+    this._wireShareButton();
+
     // Flip buttons
     this._wireFlipButtons();
   }
@@ -210,6 +213,34 @@ export class PrimitiveEditor {
     const clone = btn.cloneNode(true);
     btn.parentNode.replaceChild(clone, btn);
     clone.addEventListener('click', fn);
+  }
+
+  _wireShareButton() {
+    const btn = document.getElementById('btn-share');
+    if (!btn) return;
+    const clone = btn.cloneNode(true);
+    btn.parentNode.replaceChild(clone, btn);
+    clone.addEventListener('click', () => {
+      try {
+        const data = exportSceneData();
+        if (!data || !data.length) { alert('Nothing to share — add some objects first.'); return; }
+        const json = JSON.stringify(data);
+        const encoded = btoa(unescape(encodeURIComponent(json)))
+          .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        const url = location.origin + location.pathname + '?source=' + encoded;
+        navigator.clipboard.writeText(url).then(() => {
+          alert('✅ Link copied!');
+        }).catch(() => {
+          const ta = document.createElement('textarea');
+          ta.value = url; ta.style.cssText = 'position:fixed;left:-9999px';
+          document.body.appendChild(ta); ta.select();
+          document.execCommand('copy'); ta.remove();
+          alert('✅ Link copied!');
+        });
+      } catch (e) {
+        alert('Error sharing: ' + e.message);
+      }
+    });
   }
 
   _wireFlipButtons() {

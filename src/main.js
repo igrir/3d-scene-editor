@@ -8,7 +8,7 @@ import { createGizmoInstances, getActiveGizmo, detachGizmo } from './gizmo/index
 import { refreshSelection } from './selection.js';
 import { setupInput } from './input.js';
 import { setupImportExport } from './import-export.js';
-import { showSaveLoadUI } from './saveload.js';
+import { showSaveLoadUI, exportSceneData } from './saveload.js';
 import { history, actCreate } from './history.js';
 import { cancelDropMode, startDropMode, placeGhost } from './drop-mode.js';
 import { delSel, dupSel } from './objects.js';
@@ -51,6 +51,33 @@ window._refreshIcons = (color) => {
 
 // 7. Save/Load button
 document.getElementById('btn-saveload').addEventListener('click', () => showSaveLoadUI());
+
+// Share button — encode scene to URL parameter and copy link
+if (document.getElementById('btn-share')) {
+  document.getElementById('btn-share').addEventListener('click', () => {
+    try {
+      const data = exportSceneData();
+      if (!data || !data.length) { alert('Nothing to share — add some objects first.'); return; }
+      const json = JSON.stringify(data);
+      // UTF-8 safe base64url
+      const encoded = btoa(unescape(encodeURIComponent(json)))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      const url = location.origin + location.pathname + '?source=' + encoded;
+      navigator.clipboard.writeText(url).then(() => {
+        alert('✅ Link copied! Share it with anyone.');
+      }).catch(() => {
+        // Fallback: select text
+        const ta = document.createElement('textarea');
+        ta.value = url; ta.style.cssText = 'position:fixed;left:-9999px';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); ta.remove();
+        alert('✅ Link copied to clipboard!');
+      });
+    } catch (e) {
+      alert('Error sharing: ' + e.message);
+    }
+  });
+}
 
 // 8. Init prefab UI
 initPrefabUI();
@@ -221,6 +248,27 @@ document.querySelectorAll('#si-editor input').forEach(inp => {
 
 const params = new URLSearchParams(location.search);
 const viewScene = params.get('view');
+const sourceData = params.get('source');
+
+// Track if we loaded a shared scene to skip defaults
+let loadedFromSource = false;
+
+if (sourceData) {
+  // Decode shared scene from URL
+  try {
+    const base64 = sourceData.replace(/-/g, '+').replace(/_/g, '/');
+    const json = decodeURIComponent(escape(atob(base64)));
+    const data = JSON.parse(json);
+    loadFromData(data);
+    loadedFromSource = true;
+    // Position camera
+    sceneRefs.camera.position.set(3, 2.5, 3.5);
+    sceneRefs.orbit.target.set(0, 0.4, 0);
+    sceneRefs.orbit.update();
+  } catch (e) {
+    console.warn('Failed to load from ?source=', e);
+  }
+}
 
 if (viewScene && SCENES[viewScene]) {
   // ── Pure viewer: no UI at all, just the scene ──
@@ -282,7 +330,8 @@ if (viewScene && SCENES[viewScene]) {
     state.nextColor = DEFAULT_COLOR;
     document.getElementById('cp').value = DEFAULT_COLOR;
     document.getElementById('ch').textContent = DEFAULT_COLOR;
-  })();
+    })();
+  }
 }
 
 

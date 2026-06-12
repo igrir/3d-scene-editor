@@ -16,6 +16,7 @@
 <script>
   const params = new URLSearchParams(location.search);
   const viewScene = params.get('view');
+  const sourceData = params.get('source');
   const scenes = {
     chair: [
       { type:'box', pos:[0,0.4,0], scl:[0.8,0.1,0.8], color:'#8B4513' },
@@ -39,7 +40,36 @@
   };
 
   const sceneData = scenes[viewScene];
-  if (sceneData) {
+  if (sourceData) {
+    // Shared scene from URL
+    document.body.classList.add('view-mode-pure');
+    const ed = PrimitiveBuilder.create('#editor', {
+      height: window.innerHeight, showUI: false,
+    });
+    ed.init();
+    setTimeout(() => {
+      try {
+        const base64 = sourceData.replace(/-/g, '+').replace(/_/g, '/');
+        const json = decodeURIComponent(escape(atob(base64)));
+        const data = JSON.parse(json);
+        ed.loadScene(data);
+      } catch (e) { console.warn('Failed to load source:', e); }
+      setTimeout(() => {
+        const sr = PrimitiveBuilder.sceneRefs;
+        if (sr) {
+          sr.viewerMode = true;
+          sr.selected && sr.selected.clear();
+          const g = sr.advGizmo || sr.simGizmo;
+          if (g) g.visible = false;
+          if (sr.camera && sr.orbit) {
+            sr.camera.position.set(3, 2.5, 3.5);
+            sr.orbit.target.set(0, 0.4, 0);
+            sr.orbit.update();
+          }
+        }
+      }, 50);
+    }, 50);
+  } else if (sceneData) {
     document.body.classList.add('view-mode-pure');
     const ed = PrimitiveBuilder.create('#editor', {
       height: window.innerHeight, showUI: false,
