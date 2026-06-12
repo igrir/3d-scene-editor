@@ -146,13 +146,15 @@ export class SimpleGizmo extends THREE.Group {
     };
     if (act === 'xz' || act === 'y') {
       this.dashLine.visible = true; this.groundRing.visible = true; this.groundDot.visible = true;
-      // Reset positions immediately — account for gizmo scale (1.8x on touch)
-      const scaleFactor = 1 / Math.max(this.scale.y, 0.01);
-      const initLocalY = (0.02 - objPos.y) * scaleFactor;
-      this.groundRing.position.set(0, initLocalY, 0);
-      this.groundDot.position.set(0, initLocalY, 0);
+      // Position ground helpers at world Y=0.02 — update world matrix first so worldToLocal is correct
+      this.updateMatrixWorld(true);
+      const initTarget = new THREE.Vector3(objPos.x, 0.02, objPos.z);
+      this.worldToLocal(initTarget);
+      this.groundRing.position.set(initTarget.x, initTarget.y, initTarget.z);
+      this.groundDot.position.set(initTarget.x, initTarget.y, initTarget.z);
+      // Dash line from gizmo origin to ground (in local space)
       const initPos = this.dashLine.geometry.attributes.position.array;
-      initPos[1] = 0; initPos[4] = initLocalY;
+      initPos[1] = 0; initPos[4] = initTarget.y;
       this.dashLine.geometry.attributes.position.needsUpdate = true;
       this.dashLine.computeLineDistances();
     }
@@ -209,12 +211,13 @@ export class SimpleGizmo extends THREE.Group {
         const projZ = delta.dot(gizmoZ);
         state.targetObject.position.copy(startPos.clone().add(gizmoX.clone().multiplyScalar(projX)).add(gizmoZ.clone().multiplyScalar(projZ)));
       }
-      // Ground marker at world Y=0.02 — account for gizmo scale (1.8x on touch)
-      const xzScaleFactor = 1 / Math.max(this.scale.y, 0.01);
-      const xzLocalY = (0.02 - this.position.y) * xzScaleFactor;
-      this.groundRing.position.set(0, xzLocalY, 0);
-      this.groundDot.position.set(0, xzLocalY, 0);
-      const xzPos = this.dashLine.geometry.attributes.position.array; xzPos[1] = 0; xzPos[4] = xzLocalY;
+      // Ground marker at world Y=0.02 — update matrix then worldToLocal for correct position
+      this.updateMatrixWorld(true);
+      const xzTarget = new THREE.Vector3(state.targetObject.position.x, 0.02, state.targetObject.position.z);
+      this.worldToLocal(xzTarget);
+      this.groundRing.position.set(xzTarget.x, xzTarget.y, xzTarget.z);
+      this.groundDot.position.set(xzTarget.x, xzTarget.y, xzTarget.z);
+      const xzPos = this.dashLine.geometry.attributes.position.array; xzPos[1] = 0; xzPos[4] = xzTarget.y;
       this.dashLine.geometry.attributes.position.needsUpdate = true; this.dashLine.computeLineDistances();
     } else if (action === 'y') {
       // Use screen-space Y delta for intuitive vertical drag on mobile
@@ -222,14 +225,15 @@ export class SimpleGizmo extends THREE.Group {
       const screenDy = (mp.y - mouse.y) * camDist * 1.2;
       state.targetObject.position.y = startPos.y + screenDy;
       this.position.y = state.targetObject.position.y;
-      // Ground marker at world Y=0.02 — account for gizmo scale (1.8x on touch)
-      const scaleFactor = 1 / Math.max(this.scale.y, 0.01);
-      const gLocalY = (0.02 - this.position.y) * scaleFactor;
-      this.groundRing.position.set(0, gLocalY, 0);
-      this.groundDot.position.set(0, gLocalY, 0);
+      // Ground marker at world Y=0.02 — update matrix then worldToLocal
+      this.updateMatrixWorld(true);
+      const yTarget = new THREE.Vector3(state.targetObject.position.x, 0.02, state.targetObject.position.z);
+      this.worldToLocal(yTarget);
+      this.groundRing.position.set(yTarget.x, yTarget.y, yTarget.z);
+      this.groundDot.position.set(yTarget.x, yTarget.y, yTarget.z);
       // Dash line from gizmo local origin down to ground
       const pos = this.dashLine.geometry.attributes.position.array;
-      pos[1] = 0; pos[4] = gLocalY;
+      pos[1] = 0; pos[4] = yTarget.y;
       this.dashLine.geometry.attributes.position.needsUpdate = true;
       this.dashLine.computeLineDistances();
     } else if (action === 'rotateY') {
