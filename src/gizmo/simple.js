@@ -9,6 +9,10 @@ export class SimpleGizmo extends THREE.Group {
     this.hovered = null;
     this.dragging = null;
     this.build();
+    // Scale up on touch devices for easier tapping
+    if ('ontouchstart' in window) {
+      this.scale.set(1.8, 1.8, 1.8);
+    }
   }
 
   build() {
@@ -41,7 +45,7 @@ export class SimpleGizmo extends THREE.Group {
     gX.userData = { action: 'xz', gizmo: this };
     this.add(gX); this.parts.push(gX);
     // Larger invisible hit zone for X arrow (touch-friendly)
-    const gXZone = new THREE.Mesh(new THREE.SphereGeometry(0.2, 6, 6), M(0xff6666, 0));
+    const gXZone = new THREE.Mesh(new THREE.SphereGeometry(0.28, 6, 6), M(0xff6666, 0));
     gXZone.position.set(0.45, 0, 0);
     gXZone.userData = { action: 'xz', gizmo: this, zone: true, visiblePart: gX };
     this.add(gXZone); this.parts.push(gXZone);
@@ -52,7 +56,7 @@ export class SimpleGizmo extends THREE.Group {
     gZ.userData = { action: 'xz', gizmo: this };
     this.add(gZ); this.parts.push(gZ);
     // Larger invisible hit zone for Z arrow (touch-friendly)
-    const gZZone = new THREE.Mesh(new THREE.SphereGeometry(0.2, 6, 6), M(0x6688ff, 0));
+    const gZZone = new THREE.Mesh(new THREE.SphereGeometry(0.28, 6, 6), M(0x6688ff, 0));
     gZZone.position.set(0, 0, 0.45);
     gZZone.userData = { action: 'xz', gizmo: this, zone: true, visiblePart: gZ };
     this.add(gZZone); this.parts.push(gZZone);
@@ -63,7 +67,7 @@ export class SimpleGizmo extends THREE.Group {
     yTip.userData = { action: 'y', gizmo: this };
     this.add(yTip); this.parts.push(yTip);
     // Larger invisible hit zone for Y (touch-friendly)
-    const yZone = new THREE.Mesh(new THREE.SphereGeometry(0.25, 8, 8), M(0x66ff66, 0));
+    const yZone = new THREE.Mesh(new THREE.SphereGeometry(0.35, 8, 8), M(0x66ff66, 0));
     yZone.position.set(0, 0.95, 0);
     yZone.userData = { action: 'y', gizmo: this, zone: true, visiblePart: yTip };
     this.add(yZone); this.parts.push(yZone);
