@@ -31,6 +31,7 @@ export const state = {
 };
 
 export const sceneRefs = {
+  selected: selected,
   scene: null,
   camera: null,
   renderer: null,

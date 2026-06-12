@@ -240,9 +240,12 @@ if (viewScene && SCENES[viewScene]) {
   sceneRefs.camera.position.set(3, 2.5, 3.5);
   sceneRefs.orbit.target.set(0, 1, 0);
   sceneRefs.orbit.update();
-  // Pure viewer — no buttons, no labels, no UI
+  // Pure viewer — no UI, no interaction, no gizmo
   document.body.classList.add('view-mode');
   document.body.classList.add('view-mode-pure');
+  selected.clear();
+  detachGizmo();
+  refreshSelection();
 
 } else {
   // ── Normal editor mode with view toggle ──

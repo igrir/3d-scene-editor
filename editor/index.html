@@ -49,10 +49,16 @@
       ed.loadScene(sceneData);
       setTimeout(() => {
         const sr = PrimitiveBuilder.sceneRefs;
-        if (sr && sr.camera && sr.orbit) {
-          sr.camera.position.set(3, 2.5, 3.5);
-          sr.orbit.target.set(0, 1, 0);
-          sr.orbit.update();
+        if (sr) {
+          // Clear selection and hide gizmo for pure viewer
+          sr.selected && sr.selected.clear();
+          const gizmo = sr.advGizmo || sr.simGizmo;
+          if (gizmo) gizmo.visible = false;
+          if (sr.camera && sr.orbit) {
+            sr.camera.position.set(3, 2.5, 3.5);
+            sr.orbit.target.set(0, 1, 0);
+            sr.orbit.update();
+          }
         }
       }, 50);
     }, 50);

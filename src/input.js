@@ -35,6 +35,8 @@ export function setupInput() {
 
   // ── pointerdown ──
   dom.addEventListener('pointerdown', e => {
+    // Pure viewer mode: no interaction at all
+    if (document.body.classList.contains('view-mode-pure')) return;
     if (e.button !== 0) return;
 
     // Drop mode
@@ -120,6 +122,7 @@ export function setupInput() {
 
   // ── pointermove ──
   dom.addEventListener('pointermove', e => {
+    if (document.body.classList.contains('view-mode-pure')) return;
     // Drop mode ghost
     if (state.dropMode) { updateGhost(e); return; }
 
@@ -156,6 +159,7 @@ export function setupInput() {
 
   // ── pointerup ──
   dom.addEventListener('pointerup', e => {
+    if (document.body.classList.contains('view-mode-pure')) return;
     if (state.gizmoDragging) {
       gizmoEndDrag();
       state.gizmoDragging = false;
@@ -220,6 +224,7 @@ export function setupInput() {
 
   // ── keyboard ──
   const handleKeyDown = e => {
+    if (document.body.classList.contains('view-mode-pure')) return;
     const mod = e.metaKey || e.ctrlKey;
 
     // Duplicate (⌘D / Ctrl+D)
