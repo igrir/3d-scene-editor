@@ -59,6 +59,7 @@ export function actCreate(m) {
     },
     undo() {
       sceneRefs.scene.remove(m);
+      selected.delete(m);
       const i = objects.indexOf(m);
       if (i >= 0) objects.splice(i, 1);
       const j = dropTargets.indexOf(m);
@@ -80,6 +81,7 @@ export function actDelete(ms) {
     do() {
       for (const x of s) {
         sceneRefs.scene.remove(x.mesh);
+        selected.delete(x.mesh);
         const i = objects.indexOf(x.mesh);
         if (i >= 0) objects.splice(i, 1);
         const j = dropTargets.indexOf(x.mesh);
@@ -109,6 +111,7 @@ export function actDuplicate(o, c) {
     },
     undo() {
       sceneRefs.scene.remove(c);
+      selected.delete(c);
       const i = objects.indexOf(c);
       if (i >= 0) objects.splice(i, 1);
       const j = dropTargets.indexOf(c);
