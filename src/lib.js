@@ -112,29 +112,34 @@ export class PrimitiveEditor {
       createUI();
     }
 
-    // 4. Input
+    // 4. Input (always needed for orbit, but skip if no UI elements)
     setupInput();
 
-    // 5. Import/Export
-    setupImportExport();
+    // 5. Import/Export — only if visible
+    if (this.options.showUI) {
+      setupImportExport();
+    }
 
-    // 6. Icons
-    const icons = generateAllIcons(DEFAULT_COLOR);
-    document.querySelectorAll('.ob-icon').forEach(img => {
-      if (icons[img.dataset.t]) img.src = icons[img.dataset.t];
-    });
+    // ── UI-dependent setup (skip when showUI=false) ──
+    if (this.options.showUI) {
+      // 6. Icons
+      const icons = generateAllIcons(DEFAULT_COLOR);
+      document.querySelectorAll('.ob-icon').forEach(img => {
+        if (icons[img.dataset.t]) img.src = icons[img.dataset.t];
+      });
 
-    // 7. Wire up primitive buttons (normally in main.js)
-    this._wirePrimitiveButtons();
+      // 7. Wire up primitive buttons
+      this._wirePrimitiveButtons();
 
-    // 8. Wire up color swatches
-    this._wireColorSwatches();
+      // 8. Wire up color swatches
+      this._wireColorSwatches();
 
-    // 9. Wire up action buttons (duplicate, delete)
-    this._wireActionButtons();
+      // 9. Wire up action buttons
+      this._wireActionButtons();
 
-    // 10. Init prefab UI
-    initPrefabUI();
+      // 10. Init prefab UI
+      initPrefabUI();
+    }
 
     // 11. Start animation loop
     this._startLoop();

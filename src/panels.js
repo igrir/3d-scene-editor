@@ -32,20 +32,21 @@ export function trackColor(c) {
   saveRecent(r);
 }
 export function selectColor(c) {
-  // Strip alpha from 8-char hex (#rrggbbaa → #rrggbb)
   if (/^#[0-9a-f]{8}$/i.test(c)) c = c.slice(0, 7);
-  document.getElementById('cp').value = c;
+  state.nextColor = c;
+  const cp = document.getElementById('cp');
+  if (cp) cp.value = c;
   const cpPrev = document.getElementById('cp-preview');
   if (cpPrev) cpPrev.style.background = c;
-  document.getElementById('ch').textContent = c;
-  state.nextColor = c;
+  const ch = document.getElementById('ch');
+  if (ch) ch.textContent = c;
   const bc = document.getElementById('bar-color');
   if (bc) bc.style.background = c;
   if (state.dropMode && state.dropMode.ghost)
     state.dropMode.ghost.material.color.set(c);
-  // Sync vanilla-picker
   if (window._syncColorPicker) window._syncColorPicker(c);
-  renderRecent();
+  // Guard for viewer mode
+  if (document.getElementById('cc-recent')) renderRecent();
 }
 
 function applyColorToSelection(c) {
@@ -281,10 +282,11 @@ export function refreshPanel() {
   const si = document.getElementById('si');
   const sc = document.getElementById('sc');
   const ed = document.getElementById('si-editor');
-  const panel = document.getElementById('panel');
+  // Guard: no UI elements → viewer mode, skip
+  if (!si || !sc) return;
   if (selected.size === 0) {
     si.style.display = '';
-    ed.style.display = 'none';
+    if (ed) ed.style.display = 'none';
     si.innerHTML = '<span class="l">Click object to select</span>';
     sc.textContent = '\u2014';
     state.editingObject = null;
@@ -294,8 +296,8 @@ export function refreshPanel() {
   if (selected.size >= 1) {
     const m = [...selected][0];
     si.style.display = 'none';
-    ed.style.display = '';
-    populateEditor(m);
+    if (ed) ed.style.display = '';
+    if (ed && typeof populateEditor === 'function') populateEditor(m);
   }
 }
 
