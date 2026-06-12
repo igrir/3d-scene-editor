@@ -146,6 +146,15 @@ export class SimpleGizmo extends THREE.Group {
     };
     if (act === 'xz' || act === 'y') {
       this.dashLine.visible = true; this.groundRing.visible = true; this.groundDot.visible = true;
+      // Reset positions immediately — account for gizmo scale (1.8x on touch)
+      const scaleFactor = 1 / Math.max(this.scale.y, 0.01);
+      const initLocalY = (0.02 - objPos.y) * scaleFactor;
+      this.groundRing.position.set(0, initLocalY, 0);
+      this.groundDot.position.set(0, initLocalY, 0);
+      const initPos = this.dashLine.geometry.attributes.position.array;
+      initPos[1] = 0; initPos[4] = initLocalY;
+      this.dashLine.geometry.attributes.position.needsUpdate = true;
+      this.dashLine.computeLineDistances();
     }
     this.dragging = drag;
     sceneRefs.orbit.enabled = false;
@@ -200,8 +209,9 @@ export class SimpleGizmo extends THREE.Group {
         const projZ = delta.dot(gizmoZ);
         state.targetObject.position.copy(startPos.clone().add(gizmoX.clone().multiplyScalar(projX)).add(gizmoZ.clone().multiplyScalar(projZ)));
       }
-      // Ground marker at world Y=0.02 — compute local offset directly
-      const xzLocalY = 0.02 - this.position.y;
+      // Ground marker at world Y=0.02 — account for gizmo scale (1.8x on touch)
+      const xzScaleFactor = 1 / Math.max(this.scale.y, 0.01);
+      const xzLocalY = (0.02 - this.position.y) * xzScaleFactor;
       this.groundRing.position.set(0, xzLocalY, 0);
       this.groundDot.position.set(0, xzLocalY, 0);
       const xzPos = this.dashLine.geometry.attributes.position.array; xzPos[1] = 0; xzPos[4] = xzLocalY;
@@ -212,9 +222,9 @@ export class SimpleGizmo extends THREE.Group {
       const screenDy = (mp.y - mouse.y) * camDist * 1.2;
       state.targetObject.position.y = startPos.y + screenDy;
       this.position.y = state.targetObject.position.y;
-      // Ground marker at world Y=0.02 — compute local offset directly
-      // since gizmo has no parent transform, this.position IS world position
-      const gLocalY = 0.02 - this.position.y;
+      // Ground marker at world Y=0.02 — account for gizmo scale (1.8x on touch)
+      const scaleFactor = 1 / Math.max(this.scale.y, 0.01);
+      const gLocalY = (0.02 - this.position.y) * scaleFactor;
       this.groundRing.position.set(0, gLocalY, 0);
       this.groundDot.position.set(0, gLocalY, 0);
       // Dash line from gizmo local origin down to ground
