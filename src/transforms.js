@@ -99,8 +99,7 @@ export function gizmoDragUpdate(mp, snap) {
       else if(act2==='y'){to.position.y=Math.round(to.position.y/sp)*sp;}
       else if(act2==='scale'||act2==='uniscale'){for(const a of['x','y','z'])to.scale[a]=Math.max(0.1,Math.round(to.scale[a]/sp)*sp);}
     }
-    const g = getActiveGizmo();
-    if (g.visible && state.targetObject) g.quaternion.identity();
+
   }
 }
 
@@ -110,6 +109,9 @@ export function gizmoEndDrag() {
   if (r && state.targetObject) {
     const moved = !r.startPos.equals(r.endPos) || !r.startRot.equals(r.endRot) || !r.startScale.equals(r.endScale);
     if (moved) {
+      // Sync gizmo rotation to match object after transform
+      getActiveGizmo().quaternion.copy(state.targetObject.quaternion);
+      
       if (selected.size > 1 && state.multiInitStates) {
         const allM = [...selected];
         const st = { pos: [], rot: [], scl: [] };

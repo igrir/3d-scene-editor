@@ -331,7 +331,6 @@ if (viewScene && SCENES[viewScene]) {
     document.getElementById('cp').value = DEFAULT_COLOR;
     document.getElementById('ch').textContent = DEFAULT_COLOR;
     })();
-  }
 }
 
 

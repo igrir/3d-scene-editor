@@ -221,7 +221,9 @@ export class AdvancedGizmo extends THREE.Group {
         if (ds.length() > 0.01 && dc.length() > 0.01) {
           let ang = Math.atan2(wAxis.dot(ds.clone().cross(dc)), ds.dot(dc));
           if (this.userData.snapRotation) ang = Math.round(ang / (Math.PI / 4)) * Math.PI / 4;
-          state.targetObject.quaternion.copy(startRot.clone().multiply(new THREE.Quaternion().setFromAxisAngle(localAxis, ang)));
+          // Rotate around object's local axis, not world axis
+          const objAxis = localAxis.clone().applyQuaternion(startRot);
+          state.targetObject.quaternion.copy(startRot.clone().multiply(new THREE.Quaternion().setFromAxisAngle(objAxis, ang)));
           this.dragging.ang = ang;
 
           // Update pie indicator
@@ -275,7 +277,7 @@ export class AdvancedGizmo extends THREE.Group {
   attach(obj) {
     state.targetObject = obj;
     this.position.copy(obj.position);
-    this.quaternion.identity();
+    this.quaternion.copy(obj.quaternion);
     this._resetVisibility();
     this.dragging = null;
     this.visible = true;
